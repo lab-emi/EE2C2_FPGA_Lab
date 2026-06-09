@@ -1,0 +1,198 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+\definecolor{tudelft}{RGB}{0,166,214}
+\definecolor{shotbg}{RGB}{248,251,253}
+
+\pagestyle{fancy}
+\setlength{\headheight}{23.12pt}
+\fancyhf{}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{tudelft}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[L]{EE2C2 FPGA Lab Worksheet}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{Delft University of Technology --- Faculty of EEMCS}
+\hypersetup{colorlinks=true, linkcolor=tudelft, urlcolor=tudelft}
+
+% Empty answer box with a title and a fixed height (for written answers).
+% The title is braced ({#1}) so commas in it are not parsed as tcolorbox keys.
+\newcommand{\answerbox}[2]{%
+  \begin{tcolorbox}[colback=white,colframe=black,title={#1},height={#2},
+                    fonttitle=\bfseries\small]\mbox{}\end{tcolorbox}}
+
+% Evidence box: where students paste their own screenshot/photo.
+\newcommand{\evidencebox}[1]{%
+  \begin{tcolorbox}[colback=shotbg,colframe=tudelft,boxrule=0.6pt,
+        title={\textbf{Paste evidence:} #1},fonttitle=\small,
+        height=4.5cm,halign=center,valign=center]
+        \textit{\color{gray}(drop your screenshot / photo here)}
+  \end{tcolorbox}}
+
+\newcommand{\ans}{\underline{\hspace{6cm}}}
+
+\title{\textcolor{tudelft}{\textbf{EE2C2 FPGA Lab --- Report Worksheet\\
+        Combinational Logic, Sequential Logic, LED FSM, and PWM}}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\vspace{-2.5em}
+
+\begin{center}
+\begin{tabular}{@{}>{\bfseries}p{4cm}p{10cm}@{}}
+\toprule
+Student names & \ans \\[2pt]
+Student numbers & \ans \\[2pt]
+Group size (2 / 4) & \underline{\hspace{2cm}} \qquad Date: \underline{\hspace{3cm}} \\[2pt]
+Board ID / bench & \underline{\hspace{4cm}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\small This worksheet follows the same topics as the lab handout. Work through the handout
+topic by topic and fill in the matching section here. \emph{Paste evidence} boxes are for your own
+captures (waveforms, reports, the board). This lab is graded \textbf{pass/fail}; brief, correct
+answers are enough.\normalsize
+
+% ----------------------------------------------------------------------------
+\section*{Topic 0 --- Setup}
+\noindent\textbf{Checkpoint 0. Confirm the project was created and record your Vivado version (2023.2).}
+\begin{itemize}[noitemsep,label=$\square$]
+  \item The AC701 Vivado project was created (\texttt{build/EE2C2\_FPGA\_Lab.xpr} exists).
+\end{itemize}
+Vivado version (should be 2023.2): \underline{\hspace{4cm}}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 1 --- Combinational logic}
+
+\noindent\textbf{Checkpoint 1a. Which line is an AND gate, which is an XOR gate, and which is a multiplexer?}
+\begin{itemize}[noitemsep]
+  \item Line that describes an \textbf{AND} gate: \ans
+  \item Line that describes an \textbf{XOR} gate: \ans
+  \item Line that describes a \textbf{multiplexer}: \ans
+\end{itemize}
+
+\noindent\textbf{Simulation evidence:} \quad $\square$~ ran \texttt{tb\_comb\_led\_logic}
+\evidencebox{\texttt{tb\_comb\_led\_logic} waveform --- output changing at the same instant as an input.}
+
+\answerbox{Checkpoint 1b. Why can a testbench change inputs with \texttt{\#10} delays, while synthesizable RTL must not use \texttt{\#10} delays?}{0.10\textheight}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 2 --- Sequential logic}
+\answerbox{Checkpoint 2. What hardware does \texttt{always\_ff @(posedge clk)} infer, and why is \texttt{tick\_1s} a clock-enable pulse rather than a new clock?}{0.15\textheight}
+\evidencebox{A zoom of \texttt{count\_value} wrapping and the one-cycle \texttt{tick\_1s} pulse.}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 3 --- Finite state machines}
+\noindent\textbf{Checkpoint 3. Using the FSM waveform, choose two consecutive \texttt{tick\_1s} pulses after reset. For each pulse, record the state just before the pulse, the state just after the pulse, and the LED/RGB output after the transition.}
+\begin{center}
+\begin{tabular}{@{}p{3cm}p{3cm}p{3cm}p{4cm}@{}}
+\toprule
+\texttt{tick\_1s} pulse & State before pulse & State after pulse & LED/RGB output after transition \\ \midrule
+1 & & & \\
+2 & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\answerbox{Then explain what this shows about the roles of the state register, next-state logic, and output-decode logic.}{0.12\textheight}
+
+\noindent\textbf{Simulation evidence:} \quad $\square$~ ran \texttt{tb\_led\_fsm}
+\evidencebox{\texttt{tb\_led\_fsm} waveform --- reset region and two \texttt{tick\_1s}-to-\texttt{state\_dbg} transitions.}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 4 --- Synthesis and implementation}
+\begin{itemize}[noitemsep,label=$\square$]
+  \item Synthesis completed with no errors.
+  \item Implementation completed with no errors.
+  \item AC701 bitstream generated (\texttt{.../impl\_1/top\_ac701.bit}).
+\end{itemize}
+\answerbox{Checkpoint 4. In one sentence, what is the difference between synthesis and implementation?}{0.08\textheight}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 5 --- Hardware targets and AUP-ZU3 connection}
+\answerbox{Checkpoint 5. Why do Topics 4, 6, and 7 use the AC701 project, while the AUP-ZU3 board demos use prebuilt bitstreams? In one sentence, also state why \texttt{top\_ac701.bit} must not be programmed onto the AUP-ZU3.}{0.14\textheight}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 6 --- Static timing analysis}
+\begin{center}
+\begin{tabular}{@{}p{7cm}p{6cm}@{}}
+\toprule
+Quantity & Value \\ \midrule
+Clock period & \\
+WNS (Worst Negative Slack) & \\
+TNS (Total Negative Slack) & \\
+WHS, if shown & \\
+THS, if shown & \\
+Failing endpoints, if shown & \\
+\textbf{Did timing meet? (yes / no)} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\noindent\textbf{Critical (worst) path:}
+\begin{center}
+\begin{tabular}{@{}p{7cm}p{6cm}@{}}
+\toprule
+Field & Value \\ \midrule
+Startpoint & \\
+Endpoint & \\
+Clock domain / path group & \\
+Data path delay, if shown & \\
+Logic levels, if shown & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\answerbox{Checkpoint 6. Record WNS and TNS; state whether timing is met and how you know; record the critical path start/endpoint; and describe the path in one sentence.}{0.13\textheight}
+\evidencebox{Timing summary and/or the critical-path schematic.}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 7 --- Power analysis}
+\begin{center}
+\begin{tabular}{@{}p{7cm}p{6cm}@{}}
+\toprule
+Quantity & Value \\ \midrule
+Total on-chip power & \\
+Static power & \\
+Dynamic power & \\
+Clock power & \\
+Logic / signal power & \\
+I/O power, if shown & \\
+\textbf{Largest category} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\answerbox{Checkpoint 7a. Which power category is largest, and does the $\alpha C V_{\mathrm{DD}}^{2} f$ relation explain why?}{0.10\textheight}
+\answerbox{Checkpoint 7b. What assumptions drive the estimate, and what would you provide to improve its confidence level?}{0.10\textheight}
+\answerbox{Checkpoint 7c. Does this report include the power consumed by the physical LEDs on the board?}{0.10\textheight}
+\evidencebox{The Power Summary panel.}
+
+% ----------------------------------------------------------------------------
+\section*{Topic 8 --- PWM DAC}
+\noindent$\square$~ I completed the PWM DAC topic under \texttt{pwm\_dac/}.
+
+\vspace{0.5em}
+\noindent Responsible TA signature/initials after seeing \texttt{PWM\_STUDENT\_TEST\_PASS}:
+
+\vspace{0.3em}
+\noindent\rule{0.55\linewidth}{0.4pt}
+
+\answerbox{Checkpoint 8a. For a 100\,MHz clock and 8-bit counter, what is the PWM frequency? Show the arithmetic.}{0.08\textheight}
+\answerbox{Checkpoint 8b. Why does changing duty change LED brightness?}{0.08\textheight}
+\answerbox{Checkpoint 8c. Which TODO line describes sequential logic, and which describes combinational logic?}{0.08\textheight}
+\answerbox{Checkpoint 8d. Why does \texttt{sw[3:0]=1111} not produce a true 100\% duty cycle in this selector?}{0.08\textheight}
+\evidencebox{Console or \texttt{xsim.log} evidence showing \texttt{PWM\_STUDENT\_TEST\_PASS}.}
+
+\end{document}

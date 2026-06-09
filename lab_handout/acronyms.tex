@@ -1,0 +1,297 @@
+
+% our abbreviations, acronyms, etc
+\usepackage[draft]{pdfcomment} % https://ctan.org/pkg/pdfcomment?lang=en 
+% \usepackage{eforms}
+% \usepackage{fancytooltips} % https://ctan.org/pkg/fancytooltips
+\usepackage[hyperfirst=false,acronym,sort=none,shortcuts,nopostdot,style=super,nonumberlist,toc,nogroupskip]{glossaries}
+% \usepackage[hyperfirst=false,acronym,sort=none,shortcuts,nopostdot,style=super,nonumberlist,toc,nogroupskip,colorlinks=false]{glossaries}
+\usepackage[usenames,dvipsnames]{xcolor} % used for colored acronyms
+\glsdisablehyper % to disable hyperlinks on all acronyms
+
+\newcommand{\tipcolor}{Black}%Sepia} % Use Sepia for brownish color, Black for normal text color
+
+\newcommand{\accolor}[1]{\textcolor{\tipcolor}{#1}}
+% \newcommand{\accolor}[1]{\textcolor{Black}{#1}}
+\newcommand{\acfirstcolor}[1]{\textcolor{\tipcolor}{#1}}
+\newcommand*{\glossfirstformat}[1]{\accolor{#1}} % use to make first definition special format
+
+%https://tex.stackexchange.com/questions/232707/modify-appearance-of-first-acronym
+\newcommand*{\acfirstformat}[1]{\acfirstcolor{\textbf{#1}}}
+\newcommand*{\acplfirstformat}[1]{\acfirstcolor{\textbf{#1}}}
+\newacronymstyle{myacro}
+{%
+  \GlsUseAcrEntryDispStyle{long-short}%
+}%
+{%
+  \GlsUseAcrStyleDefs{long-short}%
+  \renewcommand*{\genacrfullformat}[1]{%
+   \glossfirstformat{\glsentrylong{##1}}\space
+   (\acfirstformat{\glsentryshort{##1}})%
+  }%
+  \renewcommand*{\Genacrfullformat}[2]{%
+   \glossfirstformat{\Glsentrylong{##1}}\space
+   (\glsentryshort{##1})%
+  }%
+  \renewcommand*{\genplacrfullformat}[2]{%
+   \glossfirstformat{\glsentrylongpl{##1}}\space
+   (\acplfirstformat{\glsentryshort{##1}})%
+  }%
+  \renewcommand*{\Genplacrfullformat}[2]{%
+   \glossfirstformat{\Glsentrylongpl{##1}}\space
+   (\glsentryshortpl{##1})%
+  }%
+}
+
+\setacronymstyle{myacro}
+
+% use for normal acronyms, gives them a PDF tooltip popup on subsequent uses, e.g. \tip{aae}
+\newcommand*{\tip}[1]{%  define our acronym command,  make it short since we use it a lot, use * for so that it is only a 'short' command
+    \ifglsused{#1}{% if we used it already, then put pdftooltip
+    %   {\tooltip{\accolor{\glsentryshort{#1}}}{\glsentrydesc{#1}}}%
+      {\pdftooltip{\accolor{\glsentryshort{#1}}}{\glsentrydesc{#1}}}%
+    }{%
+      \gls{#1}% otherwise put the normal gls
+    }%
+}%
+
+\newcommand*{\tipshort}[1]{%  define our acronym command,  make it short since we use it a lot, use * for so that it is only a 'short' command
+      {\pdftooltip{\accolor{\glsentryshort{#1}}}{\glsentrydesc{#1}}}%
+}%
+
+% use for plural acronyms, e.g. \tips{aae}
+\newcommand*{\tips}[1]{%  define our acronym command,  make it short since we use it a lot, use * for so that it is only a 'short' command
+    \ifglsused{#1}{% if we used it already, then put pdftooltip
+      {\pdftooltip{\accolor{\glsentryshortpl{#1}}}{\glsentrydescplural{#1}}}%
+    %   {\tooltip{\accolor{\glsentryshortpl{#1}}}{\glsentrydesc{#1}}}%
+    }{%
+      \glspl{#1}% otherwise put the normal gls
+    }%
+}%
+
+% sorted list of acronyms
+
+\newacronym{aae}{AAE}{Average Angular Error}
+\newacronym{abmof}{ABMOF}{Adaptive Block Matching Optical Flow}
+\newacronym{accmem}{ACC Mem}{Accumulation Memory}
+\newacronym{accreg}{ACC REG}{Accumulation Register}
+\newacronym{acp}{ACP}{Accelerator Coherency Port}
+\newacronym{adc}{ADC}{Analog-to-Digital Converter}
+\newacronym{add}{ADD}{adder}
+\newacronym{admm}{ADMM}{Alternating Direction Method of Multipliers}
+\newacronym{aee}{AEE}{Average Endpoint Error}
+\newacronym{aer}{AER}{Address-event-representation}
+\newacronym{afe}{AFE}{Analog Front-End}
+\newacronym{ai}{AI}{Artificial Intellegence}
+\newacronym{alm}{ALM}{Adaptive Logic Module}
+\newacronym{ampro}{AMPRO}{Advanced Mechanical Bipedal Experimental Robotics Prosthesis}
+\newacronym{am}{AM}{acoustic model}
+\newacronym{ann}{ANN}{Artificial Neural Network}
+\newacronym{aps}{APS}{Active Pixel Sensor}
+\newacronym{ap}{AP}{Activation Pipeline}
+\newacronym{arm}{ARM}{Advanced RISC Machines}
+\newacronym{asic}{ASIC}{Application-specific integrated circuit}
+\newacronym{at}{AT}{Adder Trees}
+\newacronym{axis}{AXIS}{AXI-Stream}
+\newacronym{axi}{AXI}{Advanced eXtensible Interface}
+\newacronym{bbb}{BBB}{Beaglebone Black}
+\newacronym{bbs}{BBS}{Bank Balanced Sparsity}
+\newacronym{blen}{BLEN}{Burst Length}
+\newacronym{bnn}{BNN}{Binary Neural Network}
+\newacronym{bpf}{BPF}{Band-Pass Filter}
+\newacronym{bptt}{BPTT}{Backpropagation Through Time}
+\newacronym{bram}{BRAM}{Block Random Access Memory}
+\newacronym{br}{BR}{Balance Ratio}
+\newacronym{cbcsc}{CBCSC}{Column-Balanced Compressed Sparse Column}
+\newacronym{cbtd}{CBTD}{Column-Balanced Targeted Dropout}
+\newacronym{ccd}{CCD}{Charge-coupled Device}
+\newacronym{cfg}{CFG}{configuration}
+\newacronym{clk}{CLK}{clock}
+\newacronym{cmos}{CMOS}{Complementary metal–oxide–semiconductor}
+\newacronym{cnn}{CNN}{Convolutional Neural Network}
+\newacronym{cnt}{CNT}{counter}
+\newacronym{conv}{CONV}{convolutional}
+\newacronym{cots}{COTS}{Commodity Off-The-Shelf}
+\newacronym{cpld}{CPLD}{Complex Programmable Logic Device}
+\newacronym{cpu}{CPU}{Central Processing Unit}
+\newacronym{cp}{CP}{column pointer}
+\newacronym{csc}{CSC}{Compressed Sparse Column}
+\newacronym{csr}{CSR}{Compressed Sparse Row}
+\newacronym{ctc}{CTC}{Connectionist Temporal Classification}
+\newacronym{cts}{CTS}{Clock Tree Synthesis}
+\newacronym{ctrl}{CTRL}{Controller}
+\newacronym{cuda}{CUDA}{Compute Unified Device Architecture} 
+\newacronym{cudnn}{cuDNN}{CUDA Deep Neural Network library}
+\newacronym{cv}{CV}{Computer Vision}
+\newacronym{dac}{DAC}{Digital-to-Analog Converter}
+\newacronym{das}{DAS}{Dynamic Audio Sensor}
+\newacronym{davis}{DAVIS}{Dynamic and Active pixel Vision Sensor}
+\newacronym{dbe}{DBE}{Digital Back-End}
+\newacronym{ddr}{DDR}{Double Data Rate}
+\newacronym{dec}{DEC}{Decoder}
+\newacronym{dev}{DEV}{development}
+\newacronym{deltagru}{DeltaGRU}{Delta Gated Recurrent Unit}
+\newacronym{deltalstm}{DeltaLSTM}{Delta Long-Short Term Memory}
+\newacronym{dl}{DL}{Deep Learning}
+\newacronym{dma}{DMA}{Direct Memory Access}
+\newacronym{dm}{DM}{Delta Memory}
+\newacronym{dnn}{DNN}{Deep Neural Network}
+\newacronym{dn}{DN}{Delta Network}
+\newacronym{dpe}{DPE}{Delta Processing Element}
+\newacronym{dram}{DRAM}{Dynamic Random Access Memory}
+\newacronym{dsp}{DSP}{Digital Signal Processing}
+\newacronym{du}{DU}{Delta Unit}
+\newacronym{dvs}{DVS}{Dynamic Vision Sensor}
+\newacronym{edflow}{EDFLOW}{Event-driven Optical Flow}
+\newacronym{eda}{EDA}{Electronic Design Automation}
+\newacronym{eds}{EDS}{Event-Driven System}
+\newacronym{eie}{EIE}{Efficient Inference Engine}
+\newacronym{emmc}{eMMC}{Embedded Multi Media Card}
+\newacronym{ese}{ESE}{Efficient Speech Recognition Engine}
+\newacronym{fast}{FAST}{Features from Accelerated Segment Test}
+\newacronym{fcl}{FCL}{Fully-Connected Layer}
+\newacronym{fc}{FC}{Fully-Connected}
+\newacronym{fex}{FEx}{Feature Extractor}
+\newacronym{fft}{FFT}{Fast Fourier Transform}
+\newacronym{fifo}{FIFO}{First-In First-Out}
+\newacronym{fllatc}{FLL-ATC}{Frequency locked-loop analog-to-time converter}
+\newacronym{fmllr}{fMLLR}{feature-space maximum likelihood linear regression}
+\newacronym{fp16}{FP16}{16-bit floating-point number}
+\newacronym{fp32}{FP32}{32-bit floating-point number}
+\newacronym{fp8}{FP8}{8-bit floating-point number}
+\newacronym{fpga}{FPGA}{Field Programmable Gate Array}
+\newacronym{fps}{FPS}{Frame Per Second}
+\newacronym{fp}{FP}{floating-point}
+\newacronym{fsm}{FSM}{Finite-State Machine}
+\newacronym{fxp}{FXP}{fixed-point}
+\newacronym{gb}{GB}{gigabytes}
+\newacronym{gemm}{GEMM}{General Matrix Multiplication}
+\newacronym{gpio}{GPIO}{General-Purpose Input/Output}
+\newacronym{gpu}{GPU}{Graphics Processing Unit}
+\newacronym{gp}{GP}{General Purpose}
+\newacronym{gru}{GRU}{Gated Recurrent Unit}
+\newacronym{gui}{GUI}{Graphical User Interface}
+\newacronym{gscd}{GSCD}{Google Speech Command Dataset}
+\newacronym{gt}{GT}{Ground Truth}
+\newacronym{hbm}{HBM}{High Bandwidth Memory}
+\newacronym{hcgs}{HCGS}{Hierarchical Coarse-Grain Sparsity}
+\newacronym{hdl}{HDL}{Hardware Description Language}
+\newacronym{hdr}{HDR}{high dynamic range}
+\newacronym{hls}{HLS}{High Level Synthesis}
+\newacronym{hmc}{HMC}{Hybrid Memory Cube}
+\newacronym{hmm}{HMM}{Hidden Markov Model}
+\newacronym{hpe}{HPE}{Heterogeneous Processing Element}
+\newacronym{hp}{HP}{High Performance}
+\newacronym{ht}{HT}{High Throughput}
+\newacronym{ic}{IC}{integrated circuit}
+\newacronym{icg}{ICG}{Integrated Clock Gating}
+\newacronym{idx}{IDX}{index}
+\newacronym{ieu}{IEU}{Input Encoding Unit}
+\newacronym{iir}{IIR}{Infinite Impulse Response}
+\newacronym{imc}{IMC}{In-Memory Computing}
+\newacronym{imu}{IMU}{Inertial Measurement Unit}
+\newacronym{int16}{INT16}{16-bit integer}
+\newacronym{int8}{INT8}{8-bit integer}
+\newacronym{int}{INT}{integer}
+\newacronym{iot}{IoT}{Internet-of-Things}
+\newacronym{io}{I/O}{Input/Output}
+\newacronym{ipu}{IPU}{Input Processing Unit}
+\newacronym{ip}{IP}{Intellectual Property}
+\newacronym{isa}{ISA}{Instruction Set Architecture}
+\newacronym{jtag}{JTAG}{Joint Test Action Group}
+\newacronym{kb}{KB}{kilobytes}
+\newacronym{kws}{KWS}{Keyword Spotting}
+\newacronym{lasso}{LASSO}{least absolute shrinkage and selection operator}
+\newacronym{ldo}{LDO}{Low-dropout}
+\newacronym{lef}{LEF}{Library Exchange Format}
+\newacronym{lidx}{LIDX}{local index}
+\newacronym{ll}{LL}{Low Latency}
+\newacronym{lstm}{LSTM}{Long Short-Term Memory}
+\newacronym{lutram}{LUTRAM}{Look-up Table based Random Access Memory}
+\newacronym{lut}{LUT}{look-up table}
+\newacronym[description={Multiply-Accumulate is the basic operation of signal processing and artificial neural networks. One MAC is 2 Op.}]{mac}{MAC}{Multiply-Accumulate}
+\newacronym{mb}{MB}{megabytes}
+\newacronym{mcu}{MCU}{Microcontroller Unit}
+\newacronym{mfcc}{MFCC}{Mel Frequency Cepstral Coefficients}
+\newacronym{mkl}{MKL}{Math Kernel Library}
+\newacronym{mlp}{NLP}{Multi-Layer Perception}
+\newacronym{mm2s}{MM2S}{Memory Mapped to Stream}
+\newacronym{mmp}{MMP}{Mini-Module-Plus}
+\newacronym{mul}{MUL}{multiplier}
+\newacronym{mxspv}{MxSPV}{Matrix-Sparse Vector Multiplication}
+\newacronym{mxv}{MxV}{Matrix-Vector Multiplication}
+\newacronym{nas}{NAS}{Neural Architecture Search}
+\newacronym{ncs}{NCS}{Neural Compute Stick}
+\newacronym{nlp}{NLP}{Natural Language Processing}
+\newacronym{norm}{Norm}{normalization}
+\newacronym{nss}{NSS}{Nyquist-Sample System}
+\newacronym{nzil}{NZIL}{Non-Zero Index List}
+\newacronym{nzi}{NZI}{Nonzero Index}
+\newacronym{nzvl}{NZVL}{Non-Zero Value List}
+\newacronym{nzv}{NZV}{Nonzero Value}
+\newacronym{ob}{OBUF}{Output Buffer}
+\newacronym{onn}{ONN}{Optical Neural Network}
+\newacronym{os}{OS}{Operating System}
+\newacronym{pcb}{PCB}{Printed Circuit Board}
+\newacronym{pcol}{pcol}{weight column pointers}
+\newacronym{pc}{PC}{Personal Computer}
+\newacronym{pd}{PD}{proportional–derivative}
+\newacronym{per}{PER}{Phone Error Rate}
+\newacronym{pe}{PE}{Processing Element}
+\newacronym{pfm}{PFM}{Pulse-frequency-modulated}
+\newacronym{pl}{PL}{Programmable Logic}
+\newacronym{prm}{PRM}{Pixel Rendering Module}
+\newacronym{ps}{PS}{Processing System}
+\newacronym{pt}{PT}{Previous Time}
+\newacronym{pwm}{PWM}{Pulse-Width-Modulated}
+\newacronym{pdk}{PDK}{Process Design Kit}
+\newacronym{qspi}{QSPI}{Quad Serial Peripheral Interface}
+\newacronym{ralut}{RALUT}{Range Addressable Lookup Table}
+\newacronym{ram}{RAM}{Random Access Memory}
+\newacronym{ratp}{RATP}{Recursive Adaptive Temporal Pooling}
+\newacronym{rec}{Rec}{Rectified}
+\newacronym{relu}{ReLU}{Rectified Linear Unit}
+\newacronym{reram}{ReRAM}{Resistive random-access memory}
+\newacronym{ridx}{RIDX}{relative index}
+\newacronym{risc}{RISC}{Reduced Instruction Set Computer}
+\newacronym{riscv}{RISC-V}{Reduced Instruction Set Computer Five}
+\newacronym{rmse}{RMSE}{Root-Mean-Square Error}
+\newacronym{rnn}{RNN}{Recurrent Neural Network}
+\newacronym{rtl}{RTL}{Register-Transfer-Level}
+\newacronym{ros}{ROS}{Robot Operating System}
+\newacronym{s2mm}{S2MM}{Stream to Memory Mapped}
+\newacronym{sad}{SAD}{Sum of Absolute Differences}
+\newacronym{sae}{SAE}{Surface of Active Events}
+\newacronym{sdc}{SDC}{Synopsys Design Constraints}
+\newacronym{sdf}{SDF}{Standard Delay Format}
+\newacronym{sdk}{SDK}{Software Development kit}
+\newacronym{sd}{SD}{Secure Digital}
+\newacronym{se}{SE}{Single-Ended}
+\newacronym{sits}{SITS}{Speed Invariant Time Surface}
+\newacronym{smem}{SMEM}{State Memory}
+\newacronym{sm}{SM}{Supplementary Material}
+\newacronym{snn}{SNN}{Spiking Neural Network}
+\newacronym{snr}{SNR}{Signal-to-Noise Ratio}
+\newacronym{soc}{SoC}{System-on-Chip}
+\newacronym{som}{SOM}{System-on-Module}
+\newacronym{spi}{SPI}{Serial Peripheral Interface}
+\newacronym{spmxspv}{SPMxSPV}{Sparse Matrix-Sparse Vector Multiplication}
+\newacronym{spmxv}{SPMxV}{Sparse Matrix-Vector Multiplication}
+\newacronym{sram}{SRAM}{Static Random Access Memory}
+\newacronym{sro}{SRO}{Switched-Ring-Oscillator}
+\newacronym{ssh}{SSH}{Secure Shell Protocol}
+\newacronym{sta}{STA}{Static Timing Analysis}
+\newacronym{saif}{SAIF}{Switching Activity Interchange Format}
+\newacronym{tcl}{TCL}{Tool Command Language}
+\newacronym{test}{TEST}{test}
+\newacronym{tf}{TF}{Threshold Function}
+\newacronym{tsmc}{TSMC}{Taiwan Semiconductor Manufacturing Company}
+\newacronym{usb}{USB}{Universal Serial Bus}
+\newacronym{vad}{VAD}{Voice Activity Detection}
+\newacronym{val}{VAL}{Value}
+\newacronym{vcd}{VCD}{Value Change Dump}
+\newacronym{vscode}{VS Code}{Visual Studio Code}
+\newacronym{wer}{WER}{Word Error Rate}
+\newacronym{wfst}{WFST}{Weighted Finite State Transducer}
+\newacronym{wl}{WL}{workload}
+\newacronym{wmem}{WMEM}{Weight Memory}
+\newacronym{xor}{XOR}{Exclusive-OR}
