@@ -1,6 +1,6 @@
 # Lightweight Pass/Fail Rubric
 
-This lab is graded pass/fail. Topic 8 PWM is part of the required lab flow. Topic 9 is optional and ungraded.
+This lab is graded pass/fail. Topic 7 PWM is part of the required lab flow. Topic 8 is optional and ungraded.
 
 | Category | Pass evidence |
 | --- | --- |

@@ -21,6 +21,9 @@ if {[file exists $build_dir]} {
 ac701_create_project $project_name $build_dir
 
 set rtl_files [lsort [glob -nocomplain "$project_root/src/*.sv"]]
+## The AUP-ZU3 board top is built separately (build_aup_zu3.tcl); keep it out of
+## the AC701 project so this project has a single top module.
+set rtl_files [lsearch -all -inline -not -glob $rtl_files "*top_aup_zu3.sv"]
 if {[llength $rtl_files] == 0} {
     puts "ERROR: No RTL files found under: $project_root/src"
     exit 1
@@ -37,7 +40,7 @@ if {[llength $sim_files] > 0} {
 
 add_files -fileset constrs_1 -norecurse "$project_root/constr/ac701_lab.xdc"
 
-set_property top top_ac701 [get_filesets sources_1]
+set_property top top [get_filesets sources_1]
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
 

@@ -7,7 +7,7 @@
 ##   vivado -mode batch -source build.tcl
 ##
 ## Output:
-##   build/EE2C2_FPGA_Lab.runs/impl_1/top_ac701.bit
+##   build/EE2C2_FPGA_Lab.runs/impl_1/top.bit
 ##
 ## Note:
 ##   This script targets AC701 because the university PCs have AC701 / Artix-7
@@ -34,6 +34,9 @@ if {[file exists $build_dir]} {
 ac701_create_project $project_name $build_dir
 
 set rtl_files [lsort [glob -nocomplain "$script_dir/src/*.sv"]]
+## The AUP-ZU3 board top is built separately (build_aup_zu3.tcl); keep it out of
+## the AC701 project so this project has a single top module.
+set rtl_files [lsearch -all -inline -not -glob $rtl_files "*top_aup_zu3.sv"]
 if {[llength $rtl_files] == 0} {
     puts "ERROR: No SystemVerilog RTL files found under: $script_dir/src"
     exit 1
@@ -50,7 +53,7 @@ if {[llength $sim_files] > 0} {
 
 add_files -fileset constrs_1 -norecurse "$script_dir/constr/ac701_lab.xdc"
 
-set_property top top_ac701 [get_filesets sources_1]
+set_property top top [get_filesets sources_1]
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
 
@@ -74,7 +77,7 @@ if {$impl_status ne "write_bitstream Complete!"} {
     exit 1
 }
 
-set bit_file "$build_dir/$project_name.runs/impl_1/top_ac701.bit"
+set bit_file "$build_dir/$project_name.runs/impl_1/top.bit"
 if {![file exists $bit_file]} {
     puts "ERROR: Expected bitstream was not generated: $bit_file"
     exit 1

@@ -15,9 +15,6 @@ module tb_led_fsm;
     logic tick_1s;
     logic [$clog2(SIM_CLK_FREQ_HZ)-1:0] count_value;
     logic [7:0] led_fsm_out;
-    logic [3:0] rgb_r;
-    logic [3:0] rgb_g;
-    logic [3:0] rgb_b;
     logic [2:0] state_dbg;
 
     one_hz_tick #(
@@ -34,9 +31,6 @@ module tb_led_fsm;
         .rst      (rst),
         .tick_1s  (tick_1s),
         .led_fsm  (led_fsm_out),
-        .rgb_r    (rgb_r),
-        .rgb_g    (rgb_g),
-        .rgb_b    (rgb_b),
         .state_dbg(state_dbg)
     );
 
@@ -53,8 +47,8 @@ module tb_led_fsm;
             @(posedge clk);
             if (tick_1s) begin
                 #1;
-                $display("time=%0t state=%0d led=%b rgb_r=%b rgb_g=%b rgb_b=%b",
-                         $time, state_dbg, led_fsm_out, rgb_r, rgb_g, rgb_b);
+                $display("time=%0t state=%0d led=%b",
+                         $time, state_dbg, led_fsm_out);
             end
         end
 

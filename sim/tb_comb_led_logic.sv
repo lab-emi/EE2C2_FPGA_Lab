@@ -10,13 +10,11 @@ module tb_comb_led_logic;
     logic [3:0] sw;
     logic       btn;
     logic [7:0] led_comb;
-    logic [2:0] rgb_comb;
 
     comb_led_logic dut (
         .sw      (sw),
         .btn     (btn),
-        .led_comb(led_comb),
-        .rgb_comb(rgb_comb)
+        .led_comb(led_comb)
     );
 
     task automatic apply_and_print(input logic [3:0] sw_value, input logic btn_value);
@@ -24,8 +22,8 @@ module tb_comb_led_logic;
             sw  = sw_value;
             btn = btn_value;
             #10;
-            $display("sw=%b btn=%b led_comb=%b rgb_comb=%b",
-                     sw, btn, led_comb, rgb_comb);
+            $display("sw=%b btn=%b led_comb=%b",
+                     sw, btn, led_comb);
         end
     endtask
 

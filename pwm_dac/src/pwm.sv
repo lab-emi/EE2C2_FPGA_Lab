@@ -24,12 +24,12 @@ module pwm #(
         end else begin
             // TODO 1: update the PWM counter once per clock.
             // Hint: add one to count. Let the N-bit register wrap naturally.
-            count <= /* STUDENT: fill in counter update */;
+            count <= // TODO 1
         end
     end
 
     // TODO 2: drive pwm_out high during the first "duty" counts of the period.
     // Hint: compare the current counter value against duty.
-    assign pwm_out = /* STUDENT: fill in comparator expression */;
+    assign pwm_out = // TODO 2
 
 endmodule

@@ -13,6 +13,8 @@
 \usepackage{array}
 \usepackage{listings}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows}
 
 % ----------------------------------------------------------------------------
 % Colours
@@ -74,7 +76,7 @@
 % ----------------------------------------------------------------------------
 \newtcolorbox{keypoint}{colback=lightgray,colframe=tudelft,title=Key Point,
         fonttitle=\bfseries,left=2mm,right=2mm,top=1mm,bottom=1mm}
-\newtcolorbox{questionbox}{colback=lightyellow,colframe=orange,title=Checkpoint --- answer in the report worksheet,
+\newtcolorbox{questionbox}{colback=lightyellow,colframe=orange,title=Checkpoint: answer in the report template,
         fonttitle=\bfseries,left=2mm,right=2mm,top=1mm,bottom=1mm}
 \newtcolorbox{notebox}{colback=notebg,colframe=BurntOrange,title=Note,
         fonttitle=\bfseries,left=2mm,right=2mm,top=1mm,bottom=1mm}
@@ -92,6 +94,8 @@
 % ----------------------------------------------------------------------------
 \title{\textcolor{tudelft}{\textbf{EE2C2 Mixed-Signal Circuits and Systems\\Lab 3: Digital Circuits on FPGA}}}
 \author{Chang Gao\footnote{Email: chang.gao@tudelft.nl}}
+% Cover-page date: edit the line below. Use \today for the build date, or \date{} for no date.
+\date{10 June 2026}
 
 \begin{document}
 \maketitle
@@ -103,10 +107,6 @@
 \section*{How to use this handout}
 \addcontentsline{toc}{section}{How to use this handout}
 
-This handout is a \textbf{step-by-step tutorial} organised into \textbf{topics}. Each topic
-has a \textbf{Background} part (the concept) followed by a \textbf{Lab} part (exact actions).
-For most actions you are given two or three interchangeable ways to do the same thing:
-
 \begin{center}
 \begin{tabular}{@{}p{2.4cm}p{11.2cm}@{}}
 \toprule
@@ -115,24 +115,25 @@ For most actions you are given two or three interchangeable ways to do the same 
 \pstag & Type this in a Windows PowerShell window (dark code block). \\
 \tcltag & Type this in the \textbf{Tcl Console} at the bottom of the Vivado window (green code block). \\
 \midrule
-\multicolumn{2}{@{}p{13.8cm}@{}}{\textbf{Figure} --- each figure uses a normal \texttt{\textbackslash includegraphics[width=...]\{...\}} line and a standard numbered caption (\textbf{Figure 1}, \textbf{Figure 2}, \ldots). Save your capture at the path shown in the source and adjust that figure's width or height directly.}\\
-\multicolumn{2}{@{}p{13.8cm}@{}}{\textbf{Checkpoint} (yellow box) --- a short question; write the answer in your report worksheet.}\\
-\multicolumn{2}{@{}p{13.8cm}@{}}{\textbf{Note} (orange box) --- a pitfall or important detail.}\\
+\multicolumn{2}{@{}p{13.8cm}@{}}{\textbf{Checkpoint} (yellow box): a short question; write your answer in the provided report template (see the note below).}\\
+\multicolumn{2}{@{}p{13.8cm}@{}}{\textbf{Note} (orange box): a pitfall or important detail.}\\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \begin{notebox}
-\textbf{The GUI and the command line do the same thing.} Vivado is scriptable: every time
+    \begin{itemize}
+        \item \textbf{The GUI and the command line do the same thing.} Vivado is scriptable: every time
 you click a button, it prints the equivalent \textbf{Tcl} command in the Tcl Console. Watching
 that console is the fastest way to learn the commands below. PowerShell simply runs Vivado in
 batch mode (\texttt{-mode batch}), i.e.\ it runs a Tcl script with no window.
-\end{notebox}
-
-\begin{notebox}
-\textbf{AUP-ZU3 box contents and return.} The AUP-ZU3 box contains one FPGA board, one
+        \item \textbf{Answer the checkpoints in the report template.} Each \textbf{Checkpoint} question must be answered
+in the provided \textbf{\LaTeX{} report template} (\texttt{EE2C2\_Lab3\_Report\_Template}) on
+\textbf{Brightspace}; submit the compiled report PDF there. Do not write your answers in this handout.
+    \item \textbf{AUP-ZU3 box contents and return.} The AUP-ZU3 box contains one FPGA board, one
 USB-C-to-USB-C cable for power, one USB-A-to-USB-C cable for the PC connection, and one power adapter.
 Please keep all items together and return the complete box after the lab.
+    \end{itemize}
 \end{notebox}
 
 % \begin{figure}[htbp]
@@ -155,9 +156,9 @@ to a running board is the \textbf{design flow}:
 SystemVerilog (RTL) --simulate--> Synthesis (RTL -> LUT/FF netlist)
    --> Implementation (place & route) --> Bitstream (.bit) --> Program over JTAG
 \end{lstlisting}
-You will walk the tool flow in Topics 1--7 using an \textbf{AC701 / Artix-7} project, because that
+You will walk the tool flow in Topics 1--6 using an \textbf{AC701 / Artix-7} project, because that
 board and device support are installed on the university PCs by default. The physical lab board on the
-bench is the \textbf{RealDigital AUP-ZU3-4GB}; the AUP-ZU3 demos in Topics 8--9 are programmed from
+bench is the \textbf{RealDigital AUP-ZU3-4GB}; the AUP-ZU3 demos in Topics 7--8 are programmed from
 \textbf{prebuilt bitstreams} so you can still see the LED behaviour even if the campus Vivado installation
 does not include XCZU3EG synthesis/implementation support.
 
@@ -180,11 +181,11 @@ You should now see \texttt{build.tcl}, \texttt{prebuilt\_bitstreams}, and the \t
 \textbf{No Git?} On the GitHub page choose \nav{Code}\gto\nav{Download ZIP} and extract it; the rest of
 the lab is identical once you \texttt{cd} into the extracted folder.
 \end{notebox}
-Add Vivado and Vitis to the PATH for this PowerShell window, so you can type \texttt{vivado} instead of
+Add Vivado to the PATH for this PowerShell window, so you can type \texttt{vivado} instead of
 its full path:
 \begin{lstlisting}[style=ps]
+$env:Path += ";C:\Programs\Xilinx2023.2\Vivado\2023.2\bin"
 $env:Path += ";C:\Xilinx\Vivado\2023.2\bin"
-$env:Path += ";C:\Xilinx\Vitis\2023.2\bin"
 vivado -version
 \end{lstlisting}
 \texttt{vivado -version} should print \texttt{Vivado v2023.2}. From now on this handout writes
@@ -197,7 +198,7 @@ folder, then replace the path above with the correct \texttt{bin} folder.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.7\linewidth]{Figures/screenshots/t0_02_powershell_setup.png}
+  \includegraphics[width=0.8\linewidth]{Figures/screenshots/t0_02_powershell_setup.png}
   \caption{PowerShell ready in the cloned lab folder.}
 \end{figure}
 
@@ -214,7 +215,7 @@ simulation setup, synthesis, implementation, timing, and power reports.
 
 \begin{notebox}
 \texttt{create\_vivado\_project.tcl} deletes and recreates the \texttt{build\textbackslash} folder
-every run. That is fine --- all sources live in \texttt{src\textbackslash}, \texttt{sim\textbackslash},
+every run. That is fine, because all sources live in \texttt{src\textbackslash}, \texttt{sim\textbackslash},
 \texttt{constr\textbackslash}, never in \texttt{build\textbackslash}.
 \end{notebox}
 
@@ -246,7 +247,7 @@ Tcl Console.
 
 \paragraph{Step 0.4 --- Find the source files.}
 
-\guitag~ In \nav{Sources}, expand \nav{Design Sources} (\texttt{top\_ac701},
+\guitag~ In \nav{Sources}, expand \nav{Design Sources} (\texttt{top},
 \texttt{comb\_led\_logic}, \texttt{one\_hz\_tick}, \texttt{led\_fsm}), \nav{Constraints}
 (\texttt{ac701\_lab.xdc}), and
 \nav{Simulation Sources} (\texttt{tb\_comb\_led\_logic}, \texttt{tb\_led\_fsm}).
@@ -259,56 +260,68 @@ get_files
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.5\linewidth]{Figures/screenshots/t0_05_sources_panel.png}
+  \includegraphics[width=0.6\linewidth]{Figures/screenshots/t0_05_sources_panel.png}
   \caption{The Sources panel, fully expanded.}
 \end{figure}
-
-\begin{questionbox}
-\textbf{Checkpoint 0.} Confirm the project was created and record your Vivado version (2023.2).
-\end{questionbox}
 
 % ============================================================================
 \newpage
 \section{Topic 1 --- Combinational logic}
 
 \subsection{Background}
-\textbf{Combinational logic} produces outputs that depend \emph{only on the current inputs} ---
-no memory. Examples: gates, multiplexers, decoders, comparators. In SystemVerilog you use
-\texttt{assign} or an \texttt{always\_comb} block:
+\textbf{Combinational logic} produces outputs that depend \emph{only on the current inputs}; it has
+no memory of the past. Gates, multiplexers, decoders, and comparators are all combinational. Because there
+is no clock and no stored state, the output is not ``computed once'' like a line of software; it is a piece
+of hardware that is \emph{always present} and continuously reflects its inputs. When an input changes, the
+output settles to its new value after a short \textbf{propagation delay} through the gates.
+
+In SystemVerilog you describe combinational logic either with a continuous \texttt{assign} or inside an
+\texttt{always\_comb} block, and both build the same kind of hardware:
 \begin{lstlisting}[style=sv]
-assign y = (a & b) | (~a & c);
+assign y = (a & b) | (~a & c);   // continuous assignment
+
+always_comb begin                // procedural form, still combinational
+    y = (a & b) | (~a & c);
+end
 \end{lstlisting}
-This does not ``execute'' like software --- it \emph{describes hardware that is always present}.
-When \texttt{a}, \texttt{b}, or \texttt{c} changes, \texttt{y} settles after the gate delay.
+
+The lab module \texttt{src/comb\_led\_logic.sv} is a single \texttt{always\_comb} block that drives eight
+LED bits, each a different function of the four switches \texttt{sw[3:0]} and the button \texttt{btn}. Its
+SystemVerilog operators (\texttt{\&}, \texttt{|}, \texttt{\textasciicircum}, \texttt{\textasciitilde}, the
+\texttt{? :} conditional, and the reduction \texttt{\&sw}) each map directly onto a piece of logic hardware. Working out which is which is the goal of Checkpoint~1a.
 
 \begin{notebox}
-\textbf{Avoid latches.} Inside an \texttt{always\_comb}, assign every output on every path (the lab
-code writes a default value first). An unassigned output infers an unwanted memory element (a latch).
+\textbf{Avoid latches.} Inside an \texttt{always\_comb} block, every output must be assigned on every path
+through the block. If a bit is left unassigned for some input combination, the synthesiser has to
+``remember'' its previous value and infers an unwanted memory element, a \textbf{latch}. The lab code
+prevents this by writing a default \texttt{led\_comb = 8'b0000\_0000;} as its first line, so every bit
+always has a defined value.
 \end{notebox}
 
 \subsection{Lab 1: inspect and simulate the combinational logic}
 
-\paragraph{Step 1.1 --- Open the source.}
+\paragraph{Step 1.1 --- Open and read the source.}
 
 \guitag~ \nav{Sources}\gto\nav{Design Sources}\gto double-click \texttt{comb\_led\_logic}.
-Read the \texttt{always\_comb} block; note the default \texttt{led\_comb = 8'b0000\_0000;} that
-prevents latches.
+The whole module is one \texttt{always\_comb} block. Read it top to bottom: the first line clears all eight
+outputs (\texttt{led\_comb = 8'b0000\_0000;}), and then each \texttt{led\_comb[i]} is assigned a different
+combinational function of \texttt{sw} and \texttt{btn}. Before you simulate, work out what gate or function
+each line builds, and watch for the two lines that both use \texttt{\&} but mean different things.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\linewidth]{Figures/screenshots/t1_01_comb_source.png}
   \caption{\texttt{comb\_led\_logic.sv} in the editor.}
 \end{figure}
 
-For example,\texttt{src/comb\_led\_logic.sv} contains some combinational logic examples that drive the single-colour LEDs in combinational mode:
-\begin{lstlisting}[style=sv]
-led_comb[1] = sw[0] & sw[1];          // ?
-led_comb[2] = sw[0] ^ sw[1];          // ?
-led_comb[3] = sw[2] ? sw[3] : sw[0];  // ?
-led_comb[7] = &sw;                    // 4-input reduction AND
-\end{lstlisting}
-
 \begin{questionbox}
-\textbf{Checkpoint 1a.} Which line is an \textbf{AND} gate, which is an \textbf{XOR} gate, and which is a \textbf{multiplexer}?
+\textbf{Checkpoint 1a: reading the logic.}
+\begin{enumerate}[noitemsep]
+  \item Identify the line that implements an \textbf{AND}, an \textbf{OR}, a \textbf{NOT}, an \textbf{XOR},
+        and a \textbf{multiplexer}.
+  \item \texttt{led\_comb[1] = sw[0] \& sw[1]} and \texttt{led\_comb[7] = \&sw} both use \texttt{\&}, yet
+        they build different gates. Explain the difference, and state exactly which switch settings drive
+        each of these two outputs high.
+\end{enumerate}
 \end{questionbox}
 
 \paragraph{Step 1.2 --- Make the combinational testbench the simulation top.}
@@ -320,10 +333,9 @@ led_comb[7] = &sw;                    // 4-input reduction AND
 set_property top tb_comb_led_logic [get_filesets sim_1]
 update_compile_order -fileset sim_1
 \end{lstlisting}
-
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.85\linewidth]{Figures/screenshots/t1_02_set_as_top.png}
+  \includegraphics[width=0.6\linewidth]{Figures/screenshots/t1_02_set_as_top.png}
   \caption{Setting the simulation top.}
 \end{figure}
 
@@ -352,25 +364,29 @@ The Tcl console should print lines like \texttt{sw=1111 btn=0 led\_comb=\ldots} 
 
 \paragraph{Step 1.4 --- Read the waveform.}
 
-\guitag~ Ensure \texttt{sw}, \texttt{btn}, \texttt{led\_comb}, \texttt{rgb\_comb} are visible; drag in
-any missing signal and click \nav{Zoom Fit}. Observe that when \texttt{sw} changes, the outputs change
-at the \emph{same} simulation time --- there is no clock here.
+\guitag~ Make sure \texttt{sw}, \texttt{btn}, and \texttt{led\_comb} are in the wave window (drag in any
+that are missing) and click \nav{Zoom Fit}. Expand \texttt{led\_comb} into its individual bits so you can
+follow each function separately. Notice that every time \texttt{sw} or \texttt{btn} changes, the affected
+\texttt{led\_comb} bits change at the \emph{same} simulation time; there is no clock edge to wait for,
+because combinational logic has no memory.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=1.0\linewidth]{Figures/screenshots/t1_03_comb_waveform.png}
   \caption{Behavioural-simulation waveform for the combinational logic.}
 \end{figure}
-\par\noindent\textit{Report evidence: capture the \texttt{tb\_comb\_led\_logic} waveform and mark one input change where the output changes at the same simulation time.}\par
 
 \begin{questionbox}
-\textbf{Checkpoint 1b.} Why can a \emph{testbench} change inputs with \texttt{\#10} delays, while
-\emph{synthesizable} RTL must not use \texttt{\#10} delays?
+\textbf{Checkpoint 1b: combinational behaviour and simulation.}
+\begin{enumerate}[noitemsep]
+  \item In the waveform, when \texttt{sw} changes, do the outputs change on a clock edge or immediately? Why?
+  \item Why may a \emph{testbench} change its inputs with \texttt{\#10} delays, while \emph{synthesizable} RTL must never use \texttt{\#10} delays?
+\end{enumerate}
 \end{questionbox}
 
 % ============================================================================
 \newpage
-\section{Topic 2 --- Sequential logic}
+\section{Topic 2 --- Sequential logic and FSM}
 
 \subsection{Background}
 \textbf{Sequential logic} has memory: outputs can depend on past inputs. State is stored in
@@ -387,17 +403,58 @@ always_ff @(posedge clk) begin
 end
 \end{lstlisting}
 The lab module \texttt{src/one\_hz\_tick.sv} counts clock cycles and, on the wrap cycle, raises
-\texttt{tick\_1s} for exactly one clock cycle. In the AC701 implementation, \texttt{top\_ac701.sv}
-sets the counter limit for the 200\,MHz board clock.
+\texttt{tick\_1s} for exactly one clock cycle. In the AC701 implementation, \texttt{src/top.sv}
+passes \texttt{CLK\_FREQ\_HZ = 200\_000\_000} so the counter wraps once per second on the 200\,MHz
+board clock.
 
 \begin{notebox}
 \textbf{A tick is a clock \emph{enable}, not a new clock.} \texttt{tick\_1s} is a normal signal that
-is high for one cycle. The whole design still runs on the single 100\,MHz \texttt{clk}.
+is high for one cycle. The whole design still runs on the single 200\,MHz \texttt{clk}; \texttt{tick\_1s}
+just marks the one cycle on which the FSM is allowed to advance.
 \end{notebox}
 
-\subsection{Lab 2: inspect the counter and watch it tick}
+A \textbf{finite state machine (FSM)} is built directly on this sequential logic: it moves through defined
+\textbf{states} and has three parts: a \textbf{state register} (flip-flops, \emph{sequential}),
+\textbf{next-state logic} (\emph{combinational}), and \textbf{output decode logic} (\emph{combinational}).
+The lab FSM (\texttt{src/led\_fsm.sv}) walks a five-state ring, lighting one of the AC701's four user
+LEDs at a time and then turning them all off:
+\begin{lstlisting}[style=plain]
+IDLE -> MONO_LED_0 -> MONO_LED_1 -> MONO_LED_2 -> ALL_OFF -> (back to IDLE)
+\end{lstlisting}
+A transition happens \emph{only when} \texttt{tick\_1s} is high, which is once per second on the board. So the
+counter you just met is what \emph{paces} the FSM: \texttt{tick\_1s} is the clock-enable that lets the
+state register advance one step, without adding a second clock.
 
-\paragraph{Step 2.1 --- Open the source.}
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[->, >=stealth', thick, node distance=2.8cm,
+      every state/.style={draw=tudelft, very thick, fill=lightgray,
+        align=center, minimum size=1.5cm, inner sep=1pt,
+        font=\bfseries\footnotesize},
+      every edge/.style={draw=darkgray, very thick},
+      lbl/.style={font=\scriptsize, fill=white, inner sep=1.5pt}]
+    \def\R{3.1cm}
+    \node[state, initial, initial where=above, initial text={\scriptsize rst}]
+                 (idle) at ( 90:\R) {IDLE\\[-1pt]{\scriptsize\ttfamily led=0001}};
+    \node[state] (m0)   at ( 18:\R) {MONO\_0\\[-1pt]{\scriptsize\ttfamily led=0010}};
+    \node[state] (m1)   at (-54:\R) {MONO\_1\\[-1pt]{\scriptsize\ttfamily led=0100}};
+    \node[state] (m2)   at (-126:\R){MONO\_2\\[-1pt]{\scriptsize\ttfamily led=1000}};
+    \node[state] (off)  at (-198:\R){ALL\_OFF\\[-1pt]{\scriptsize\ttfamily led=0000}};
+    \path
+      (idle) edge[bend left=12] node[lbl] {\texttt{tick\_1s}} (m0)
+      (m0)   edge[bend left=12] node[lbl] {\texttt{tick\_1s}} (m1)
+      (m1)   edge[bend left=12] node[lbl] {\texttt{tick\_1s}} (m2)
+      (m2)   edge[bend left=12] node[lbl] {\texttt{tick\_1s}} (off)
+      (off)  edge[bend left=12] node[lbl] {\texttt{tick\_1s}} (idle);
+  \end{tikzpicture}
+  \caption{The \texttt{led\_fsm} state diagram. Each edge fires only on the cycle when
+    \texttt{tick\_1s} is high; while \texttt{tick\_1s} is low the FSM holds its current state.
+    \texttt{led} shows \texttt{led\_fsm[3:0]}, the nibble driven onto the four AC701 user LEDs.}
+\end{figure}
+
+\subsection{Lab 2: inspect the counter and the FSM, then simulate them together}
+
+\paragraph{Step 2.1 --- Open the counter source.}
 
 \guitag~ \nav{Sources}\gto\nav{Design Sources}\gto double-click \texttt{one\_hz\_tick}. Find the
 \texttt{always\_ff} block, the register \texttt{count\_value}, and the line that pulses \texttt{tick\_1s}.
@@ -408,10 +465,31 @@ is high for one cycle. The whole design still runs on the single 100\,MHz \textt
   \caption{\texttt{one\_hz\_tick.sv} in the editor.}
 \end{figure}
 
-\paragraph{Step 2.2 --- Observe the counter and tick in simulation.}
-The counter runs together with the FSM in \texttt{tb\_led\_fsm}, which uses a tiny
-\texttt{SIM\_CLK\_FREQ\_HZ = 8} so a tick happens every 8 cycles. (Full run in Topic 3.)
-\tcltag~
+\paragraph{Step 2.2 --- Open the FSM source and identify its three parts.}
+
+\guitag~ \nav{Sources}\gto\nav{Design Sources}\gto double-click \texttt{led\_fsm}. Locate (1) the
+\texttt{typedef enum} state type, (2) the state register \texttt{always\_ff \ldots state <= next\_state;},
+(3) the next-state \texttt{always\_comb} guarded by \texttt{if (tick\_1s)} (note its first line
+\texttt{next\_state = state;}), and (4) the output-decode \texttt{always\_comb} that sets \texttt{led\_fsm}
+from the current \texttt{state}.
+
+\paragraph{Step 2.3 --- Run the simulation once.}
+A single testbench, \texttt{tb\_led\_fsm}, exercises \emph{both} modules together: the counter/tick and the
+FSM it drives. It uses a tiny \texttt{SIM\_CLK\_FREQ\_HZ = 8} so a tick happens every 8 cycles. Run it
+\textbf{once} and read everything below from this one run.
+
+\guitag~ Make \texttt{tb\_led\_fsm} the sim top (right-click \gto\ \nav{Set as Top}), then
+\nav{Flow Navigator}\gto\nav{Run Simulation}\gto\nav{Run Behavioral Simulation}.\\
+\begin{notebox}
+\textbf{Close the previous simulation before launching this one.} If the Topic 1 waveform is still open,
+run \texttt{close\_sim} in the Tcl Console first; otherwise Vivado may report
+\texttt{ERROR: [Vivado 12-1501] Simulator for snapshot \ldots\ is already running}.
+\end{notebox}
+\pstag~ \emph{(alternative, no GUI)}
+\begin{lstlisting}[style=ps]
+vivado -mode batch -source scripts\run_simulation.tcl -tclargs tb_led_fsm
+\end{lstlisting}
+\tcltag~ \emph{(alternative)}
 \begin{lstlisting}[style=tcl]
 catch {close_sim} ;# close the Topic 1 simulation if it is still open
 set_property top tb_led_fsm [get_filesets sim_1]
@@ -419,117 +497,60 @@ update_compile_order -fileset sim_1
 launch_simulation
 run all
 \end{lstlisting}
-Watch \texttt{count\_value} increment $0\to7$ and \texttt{tick\_1s} pulse for one cycle on each wrap.
+The console prints one line per tick, ending with \texttt{tb\_led\_fsm completed.}
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=1.0\linewidth]{Figures/screenshots/t2_02_counter_tick_waveform.png}
-  \caption{Counter and tick in the FSM testbench.}
-\end{figure}
-\par\noindent\textit{Report evidence: capture a zoom of \texttt{count\_value} wrapping and the one-cycle \texttt{tick\_1s} pulse.}\par
+\paragraph{Step 2.4 --- Read the counter, the tick, and the FSM in one waveform.}
 
-\begin{questionbox}
-\textbf{Checkpoint 2.} What hardware does \texttt{always\_ff @(posedge clk)} infer, and why is
-\texttt{tick\_1s} a clock-enable pulse rather than a new clock?
-\end{questionbox}
-
-% ============================================================================
-\newpage
-\section{Topic 3 --- Finite state machines}
-
-\subsection{Background}
-A \textbf{finite state machine (FSM)} is sequential logic that moves through defined \textbf{states}.
-It has three parts: a \textbf{state register} (flip-flops, \emph{sequential}), \textbf{next-state logic}
-(\emph{combinational}), and \textbf{output decode logic} (\emph{combinational}). The lab FSM
-(\texttt{src/led\_fsm.sv}) advances one step per tick:
-\begin{lstlisting}[style=plain]
-IDLE -> MONO_LED_0 -> MONO_LED_1 -> MONO_LED_2
-     -> RGB_RED -> RGB_GREEN -> RGB_BLUE -> ALL_OFF -> (back to IDLE)
-\end{lstlisting}
-A transition happens \emph{only when} \texttt{tick\_1s} is high --- once per second on the board.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\linewidth]{Figures/screenshots/t3_01_fsm_state_diagram.png}
-  \caption{FSM state diagram.}
-\end{figure}
-
-\subsection{Lab 3: inspect and simulate the FSM}
-
-\paragraph{Step 3.1 --- Open and identify the three FSM parts.}
-
-\guitag~ \nav{Sources}\gto\nav{Design Sources}\gto double-click \texttt{led\_fsm}. Locate (1) the
-\texttt{typedef enum} state type, (2) the state register \texttt{always\_ff \ldots state <= next\_state;},
-(3) the next-state \texttt{always\_comb} guarded by \texttt{if (tick\_1s)}, and (4) the output-decode
-\texttt{always\_comb} that sets \texttt{led\_fsm}, \texttt{rgb\_r/g/b}.
-
-\paragraph{Step 3.2 --- Run the FSM testbench.}
-
-\guitag~ Make \texttt{tb\_led\_fsm} the sim top (right-click \gto\ \nav{Set as Top}), then
-\nav{Flow Navigator}\gto\nav{Run Simulation}\gto\nav{Run Behavioral Simulation}.\\
-
-\pstag~ \emph{(alternative)}
-\begin{lstlisting}[style=ps]
-vivado -mode batch -source scripts\run_simulation.tcl -tclargs tb_led_fsm
-\end{lstlisting}
-\tcltag~ \emph{(alternative)}
-\begin{lstlisting}[style=tcl]
-catch {close_sim} ;# close any previous simulation snapshot first
-set_property top tb_led_fsm [get_filesets sim_1]
-update_compile_order -fileset sim_1
-launch_simulation
-run all
-\end{lstlisting}
-
-\paragraph{Step 3.3 --- Read the FSM waveform.}
-
-\guitag~ Add \texttt{clk}, \texttt{rst}, \texttt{tick\_1s}, \texttt{count\_value}, \texttt{state\_dbg},
-\texttt{led\_fsm\_out}, \texttt{rgb\_r}, \texttt{rgb\_g}, \texttt{rgb\_b}; \nav{Zoom Fit}. Observe: reset
-holds \texttt{IDLE}; after release, \texttt{tick\_1s} pulses every 8 clocks; \texttt{state\_dbg} advances
-one state per tick; outputs follow the state. The console prints one line per tick, ending with
+\guitag~ Add \texttt{clk}, \texttt{rst}, \texttt{tick\_1s}, \texttt{count\_value}, \texttt{state\_dbg}, and
+\texttt{led\_fsm\_out}; \nav{Zoom Fit}. First read the \textbf{sequential} part: \texttt{count\_value}
+increments $0\to7$ and \texttt{tick\_1s} pulses for one cycle on each wrap. Then read the \textbf{FSM}:
+reset holds \texttt{IDLE}; after release, \texttt{state\_dbg} advances one state per \texttt{tick\_1s} pulse
+and \texttt{led\_fsm\_out} follows the state. The console prints one line per tick, ending with
 \texttt{tb\_led\_fsm completed.}
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=1.0\linewidth]{Figures/screenshots/t3_03_fsm_waveform.png}
-  \caption{The FSM testbench waveform.}
-\end{figure}
-\par\noindent\textit{Report evidence: capture the \texttt{tb\_led\_fsm} waveform and mark the reset region plus two consecutive \texttt{tick\_1s} pulses and their \texttt{state\_dbg} transitions.}\par
-
 \begin{questionbox}
-\textbf{Checkpoint 3.} Using the FSM waveform, choose two consecutive \texttt{tick\_1s} pulses after reset.
-For each pulse, record the state just before the pulse, the state just after the pulse, and the LED/RGB
-output after the transition. Then explain what this shows about the roles of the state register,
-next-state logic, and output-decode logic.
+\textbf{Checkpoint 2.}
+The FSM has a state register, next-state logic, and output decode. Why does the output decode read \texttt{state} (the registered value) rather than \texttt{next\_state}?
 \end{questionbox}
 
 % ============================================================================
-\newpage
-\section{Topic 4 --- From RTL to bitstream: synthesis and implementation}
+\section{Topic 3 --- From RTL to bitstream: synthesis and implementation}
 
 \subsection{Background}
-The AC701 top \texttt{src/top\_ac701.sv} converts the differential clock with an \texttt{IBUFDS},
-synchronises \texttt{rst\_btn}, instantiates the lab modules, and multiplexes between the FSM and
-combinational LED outputs on \texttt{sw[3]}.
-To reach a configured chip: \textbf{Synthesis} (RTL $\to$ LUT/FF netlist), \textbf{Implementation}
-(place \& route onto this exact device), and \textbf{Bitstream generation} (\texttt{top\_ac701.bit}).
+So far you have simulated the lab modules on their own. To run them on a real chip they need a
+\textbf{top-level wrapper} that connects them to the board's physical pins. \texttt{src/top.sv} is that
+wrapper for the AC701:
+\begin{itemize}[noitemsep]
+  \item an \texttt{IBUFDS} buffer converts the board's 200\,MHz \emph{differential} clock (\texttt{clk\_p},
+        \texttt{clk\_n}) into the single-ended \texttt{clk} the design runs on;
+  \item a two-flip-flop \textbf{synchroniser} cleans up the asynchronous reset button before it enters the
+        clocked logic;
+  \item it instantiates \texttt{one\_hz\_tick}, \texttt{comb\_led\_logic}, and \texttt{led\_fsm}, passing
+        \texttt{CLK\_FREQ\_HZ = 200\_000\_000}; and
+  \item \texttt{sw[3]} selects which result reaches the four user LEDs:
+        \texttt{led = sw[3] ? led\_comb[3:0] : led\_fsm[3:0]}.
+\end{itemize}
+The constraints file \texttt{constr/ac701\_lab.xdc} ties each port to a physical package pin and declares the
+200\,MHz (5\,ns) clock, so the tool knows \emph{where} the signals go and \emph{how fast} the clock runs.
 
-\subsection{Lab 4: build the design}
+Turning this RTL into a configured chip takes three stages:
+\begin{itemize}[noitemsep]
+  \item \textbf{Synthesis} converts the SystemVerilog into a netlist of the FPGA's building blocks
+        (look-up tables, flip-flops, carry chains).
+  \item \textbf{Implementation} \emph{places} those blocks at specific sites on this exact device and
+        \emph{routes} the wires between them, honouring the XDC constraints.
+  \item \textbf{Bitstream generation} writes the configuration file \texttt{top.bit} that programs the
+        FPGA fabric.
+\end{itemize}
+
+\subsection{Lab 3: build the design}
 \begin{notebox}
 \textbf{Do not run both methods at once.} \texttt{build.tcl} deletes and recreates
 \texttt{build\textbackslash}. If the GUI has the project open, Windows blocks the delete.
 \textbf{Close the GUI before running \texttt{build.tcl}}, or use the GUI buttons instead.
 \end{notebox}
 
-\paragraph{Option A --- one scripted build.}
-
-\pstag~ (close the GUI first)
-\begin{lstlisting}[style=ps]
-vivado -mode batch -source build.tcl
-\end{lstlisting}
-Watch for \texttt{INFO: Bitstream generated at: \ldots\textbackslash impl\_1\textbackslash top\_ac701.bit}.
-
-\paragraph{Option B --- click through the flow.}
+\paragraph{Option A --- click through the flow.}
 
 \guitag~ \nav{Flow Navigator}\gto\nav{Run Synthesis} (\nav{OK}); when it finishes choose
 \nav{Run Implementation} (\nav{OK}); then \nav{Generate Bitstream} (\nav{OK}).\\
@@ -541,8 +562,16 @@ launch_runs impl_1 -to_step write_bitstream -jobs 4
 wait_on_run impl_1
 \end{lstlisting}
 
+\paragraph{Option B --- one scripted build.}
 
-\paragraph{Step 4.1 --- Confirm it built and check for errors.}
+\pstag~ (close the GUI first)
+\begin{lstlisting}[style=ps]
+vivado -mode batch -source build.tcl
+\end{lstlisting}
+Watch for \texttt{INFO: Bitstream generated at: \ldots\textbackslash impl\_1\textbackslash top.bit}.
+
+
+\paragraph{Step 3.1 --- Confirm it built and check for errors.}
 
 \guitag~ Open the \nav{Design Runs} tab; \texttt{synth\_1} and \texttt{impl\_1} should show green check
 marks. Open \nav{Messages} and confirm no red errors.
@@ -556,26 +585,185 @@ marks. Open \nav{Messages} and confirm no red errors.
 
 
 \begin{questionbox}
-\textbf{Checkpoint 4.} In one sentence,
-what is the difference between synthesis and implementation?
+\textbf{Checkpoint 3.}
+\texttt{ac701\_lab.xdc} supplies two distinct kinds of information: \emph{where} each port connects
+        and \emph{how fast} the clock runs. What would go wrong if the clock-period constraint were left out?
 \end{questionbox}
 
 % ============================================================================
 \newpage
-\section{Topic 5 --- Hardware targets and AUP-ZU3 connection}
+\section{Topic 4 --- Static timing analysis}
 
 \subsection{Background}
-The required implementation reports in this lab use the \textbf{AC701} project you built in Topic 4.
-Your bench board is the \textbf{RealDigital AUP-ZU3-4GB}. Those are different FPGA families, so the
-\texttt{top\_ac701.bit} file from Topic 4 must \textbf{not} be programmed onto the AUP-ZU3.
+The AC701 board clock is 200\,MHz, so the clock period is 5\,ns. Every signal launched by one flip-flop on a
+clock edge must travel through the combinational logic, reach the next flip-flop, and \emph{settle} before
+the following edge captures it. \textbf{Static timing analysis} (STA) checks this for \emph{every}
+register-to-register path in the design at once. Unlike the simulations in Topics 1--2, STA uses no input
+vectors; it works purely from the netlist delays and the clock constraint, so it proves timing for
+\emph{all} input combinations, not just the ones a testbench happens to drive.
 
-To keep the lab portable on university PCs, the AUP-ZU3 parts of the lab use \textbf{prebuilt AUP-ZU3
-bitstreams}. Vivado only needs Hardware Manager to download those files over JTAG; it does not need to
-synthesize, implement, or even create a project for the XCZU3EG device.
+\paragraph{Setup constraint (data must not arrive too late).}
+Start from the one-period bound and add a margin $t_{\mathrm{unc}}$ for \textbf{clock uncertainty} (clock
+jitter plus skew between the launch and capture flip-flops):
+\[
+  T_{\mathrm{clk}} \;\ge\; t_{\mathrm{cq}} + t_{\mathrm{comb}} + t_{\mathrm{su}} + t_{\mathrm{unc}}.
+\]
+This uses the \emph{slowest} (longest) combinational path, so that path sets the maximum usable clock
+frequency. The \textbf{setup slack} is how much room is left over:
+\[
+  t_{\mathrm{slack}} \;=\; T_{\mathrm{clk}} - \bigl(t_{\mathrm{cq}} + t_{\mathrm{comb}} + t_{\mathrm{su}}
+  + t_{\mathrm{unc}}\bigr).
+\]
+Negative slack means the path is too slow to meet the clock period, and the captured value is undefined.
 
-\subsection{Lab 5: prepare the AUP-ZU3 for prebuilt demos}
+\paragraph{Hold constraint (data must not arrive too early).}
+Hold checks the same path in its \emph{fastest} version, using the minimum delays $t_{\mathrm{cq,min}}$ and
+$t_{\mathrm{comb,min}}$ (setup used the slowest):
+\[
+  t_{\mathrm{cq,min}} + t_{\mathrm{comb,min}} \;\ge\; t_{\mathrm{h}} + t_{\mathrm{unc}}.
+\]
+The corresponding \textbf{hold slack} is
+\[
+  t_{\mathrm{slack}} \;=\; \bigl(t_{\mathrm{cq,min}} + t_{\mathrm{comb,min}}\bigr)
+  - \bigl(t_{\mathrm{h}} + t_{\mathrm{unc}}\bigr).
+\]
+The shortest path must be long enough that the newly launched value does not race through and overwrite the
+data before the capturing flip-flop has latched the \emph{previous} value. This is a short-path problem,
+checked separately from setup. Because the inequality contains no $T_{\mathrm{clk}}$ term, a hold violation
+\textbf{cannot be fixed by slowing the clock}.
 
-\paragraph{Step 5.1 --- Connect and power the AUP-ZU3.}
+\paragraph{What Vivado reports.}
+A path with positive slack meets timing with room to spare; negative slack means it fails. Vivado summarises
+this across the whole design with:
+\begin{itemize}[noitemsep]
+  \item \textbf{WNS} (Worst Negative Slack) is the slack of the single tightest
+        setup path. $\mathrm{WNS} \ge 0$ means \emph{every} setup path is met.
+  \item \textbf{TNS} (Total Negative Slack) is the sum of all negative setup
+        slacks. $\mathrm{TNS} = 0$ confirms there are no setup violations.
+  \item \textbf{WHS / THS} are the Worst / Total Hold Slack, the hold-side
+        equivalents of WNS / TNS.
+  \item The \textbf{critical path} is the path with the smallest slack, i.e.\ the
+        one closest to failing (and the first to fix if timing is not met).
+\end{itemize}
+In this small design the critical path almost always lies inside the one-second counter in
+\texttt{one\_hz\_tick}. With \texttt{CLK\_FREQ\_HZ = 200\,000\,000} the counter is about 28 bits wide, and
+its increment adder and terminal-count comparator form the longest combinational chain between two
+flip-flops; everything else (the FSM, the LED multiplexer) is far shorter.
+
+\begin{notebox}
+The switches and reset button are slow, human-driven inputs, so \texttt{ac701\_lab.xdc} marks them
+\texttt{set\_false\_path}. STA therefore ignores paths that start at those pins and reports only the internal
+register-to-register paths, which is why the critical path lives inside the counter rather than at an input.
+\end{notebox}
+
+\subsection{Lab 4: read the timing report and find the critical path}
+
+\paragraph{Step 4.1 --- Open the implemented design.}
+
+\guitag~ \nav{Flow Navigator}\gto\nav{Open Implemented Design}.\quad
+
+\tcltag~ \texttt{open\_run impl\_1}
+
+\paragraph{Step 4.2 --- Open the timing summary.}
+
+\guitag~ \nav{Reports}\gto\nav{Timing}\gto\nav{Report Timing Summary} (\nav{OK}).\\
+\tcltag~ \texttt{report\_timing\_summary} \quad
+
+\paragraph{Step 4.3 --- Inspect the worst (critical) path.}
+
+\guitag~ In the \nav{Timing} tab expand \nav{Setup}\gto your clock and click the first (worst) path.
+The \nav{Path Properties} show Source (From), Destination (to), Source Clock, Destination Clock, Total Delay, Logic Delay and Net Delay. Record them.
+
+\paragraph{Step 4.4 --- See the path as hardware.}
+
+\guitag~ Right-click the selected path \gto\ \nav{Schematic}. Identify the launch flip-flop, the
+combinational logic between them (LUTs and the carry chain of the counter's adder/comparator), and the
+capture flip-flop. This chain is the physical hardware whose delay the slack in Step 4.3 measures.
+
+\begin{questionbox}
+\textbf{Checkpoint 4.}
+\begin{enumerate}[noitemsep]
+    \item Record \textbf{WNS} and \textbf{TNS}. Is setup timing met?
+    \item Record the start point and endpoint of the critical path, and describe in one or two sentences what
+        hardware lies between them.
+    \item Could a \emph{hold} violation (negative WHS) be fixed by slowing the clock?
+    \item (Optional) Open the timing report for the worst setup path and read off the clock period
+        $T_{\mathrm{clk}}$ (the requirement), the \textbf{data path delay} ($t_{\mathrm{cq}} +
+        t_{\mathrm{comb}}$), the \textbf{clock uncertainty} $t_{\mathrm{unc}}$, and the \textbf{slack}.
+        Rearrange the setup-slack equation to solve for the setup-time requirement
+        \[ t_{\mathrm{su}} = T_{\mathrm{clk}} - t_{\mathrm{unc}} - (t_{\mathrm{cq}} + t_{\mathrm{comb}})
+           - t_{\mathrm{slack}}, \]
+        and report your four numbers and the resulting $t_{\mathrm{su}}$.
+
+\end{enumerate}
+\end{questionbox}
+
+% ============================================================================
+\newpage
+\section{Topic 5 --- Power analysis}
+
+\subsection{Background}
+Vivado's power report \emph{estimates} on-chip power and splits it into two parts:
+\textbf{static} power (transistor leakage, present whenever the device is powered)
+and \textbf{dynamic} power (drawn only when nodes switch). Vivado further breaks the
+dynamic part into \textbf{clock}, \textbf{logic/signal}, and \textbf{I/O} power.
+
+Dynamic switching power follows
+\[
+  P_{\mathrm{dyn}} \;\approx\; \alpha\, C\, V_{\mathrm{DD}}^{2}\, f,
+\]
+where $\alpha$ is the switching (toggle) activity, $C$ the switched capacitance,
+$V_{\mathrm{DD}}$ the supply voltage, and $f$ the clock frequency. The activity
+$\alpha$ is the key unknown: unless you supply real switching data (e.g.\ a SAIF
+file from simulation), Vivado performs a \emph{vectorless} estimate using assumed
+default toggle rates, and flags this with a low \nav{Confidence level}. The
+$V_{\mathrm{DD}}^{2}$ term is why supply voltage dominates the energy budget, and
+the linear $f$ term is why the clock and clock-driven logic are often the largest
+dynamic contributors.
+
+You read this report on the \textbf{AC701} implementation from Topic 3, running at 200\,MHz. Because the
+design is tiny and its only continuously toggling logic is the free-running counter inside
+\texttt{one\_hz\_tick}, the clock network and that counter dominate the dynamic estimate, while everything
+else contributes very little.
+
+\subsection{Lab 5: read the power report}
+
+\paragraph{Step 5.1 --- Open the power report.}
+
+\guitag~ \nav{Reports}\gto\nav{Report Power} (\nav{OK}).\\
+\tcltag~ \texttt{report\_power}\\
+
+\paragraph{Step 5.2 --- Record the numbers.}
+From the \nav{Summary}, read off the total on-chip power, the static and dynamic totals, the clock /
+logic-signal / I/O components, and the reported \nav{Confidence level}; note which dynamic category is
+largest.
+
+\begin{questionbox}
+\textbf{Checkpoint 5.}
+Imagine halving the clock frequency to 100\,MHz. Which part of the total power would drop, and which
+        would stay roughly the same?
+\end{questionbox}
+
+% ============================================================================
+\newpage
+\section{Topic 6 --- Hardware targets and AUP-ZU3 connection}
+
+\subsection{Background}
+Every report so far has come from the \textbf{AC701} project, because the university PCs ship with Artix-7
+device support and can synthesize, implement, and analyse it. Your bench board, however, is the
+\textbf{RealDigital AUP-ZU3-4GB}, a Zynq UltraScale+ (XCZU3EG) device from a \emph{different} FPGA family.
+A bitstream is device-specific, so the \texttt{top.bit} you built in Topic 3 \textbf{cannot} be programmed
+onto the AUP-ZU3 (and an AUP-ZU3 bitstream cannot run on the AC701).
+
+To stay portable on PCs that may lack XCZU3EG support, the AUP-ZU3 demos are shipped as \textbf{prebuilt
+bitstreams} under \texttt{prebuilt\_bitstreams\textbackslash}. Vivado only needs its \textbf{Hardware
+Manager} to download a \texttt{.bit} file over JTAG, with no synthesis, implementation, or even a project
+required. In this topic you connect the board and then watch the \emph{same RTL you simulated in Topics
+1--2} (the combinational logic and the LED FSM) running on real hardware.
+
+\subsection{Lab 6: prepare the AUP-ZU3 for prebuilt demos}
+
+\paragraph{Step 6.1 --- Connect and power the AUP-ZU3.}
 The board has \textbf{two USB-C ports}: \textbf{PROG UART} goes to the \textbf{PC} for JTAG/programming,
 and \textbf{EXT PWR} goes to a USB-C \textbf{PD power adapter}. The PROG UART cable alone does not power
 the board.
@@ -593,7 +781,7 @@ With the board \textbf{off}:
   \caption{The powered AUP-ZU3 board with both USB-C cables attached.}
 \end{figure}
 
-\paragraph{Step 5.2 --- Check that Hardware Manager can see the board.}
+\paragraph{Step 6.2 --- Check that Hardware Manager can see the board.}
 \textbf{Preflight before any prebuilt demo:} \textbf{EXT PWR} is connected and the power LED is on;
 \textbf{BOOT} is set to \textbf{USB-JTAG/JTAG} (power-cycle after changing it); \textbf{PROG UART} is
 connected with a data cable; and no other Vivado, Vitis, Hardware Manager, or \texttt{hw\_server} session
@@ -626,250 +814,215 @@ let the script open Hardware Manager itself. If a script says the target is busy
 Vitis windows and retry.
 \end{notebox}
 
-\begin{questionbox}
-\textbf{Checkpoint 5.} Why do Topics 4, 6, and 7 use the AC701 project, while the AUP-ZU3 board demos
-use prebuilt bitstreams? In one sentence, also state why \texttt{top\_ac701.bit} must not be programmed
-onto the AUP-ZU3.
-\end{questionbox}
+\paragraph{Step 6.3 --- Program the LED demo and watch the lab RTL run on hardware.}
+With the board detected, program the prebuilt \textbf{LED demo}: the AUP-ZU3 build of the very same
+\texttt{one\_hz\_tick}, \texttt{comb\_led\_logic}, and \texttt{led\_fsm} modules you read and simulated in
+Topics 1--2, wrapped for this board by \texttt{src/top\_aup\_zu3.sv}.
+
+\guitag~ In \nav{Hardware Manager} right-click the \texttt{xczu3} device \gto\
+\nav{Program Device}, set the bitstream to
+\texttt{prebuilt\_bitstreams\textbackslash aup\_zu3\_led\_demo.bit}, and click \nav{Program}.
+
+\pstag~ \emph{(alternative)} from the repository root (the script opens Hardware Manager itself, so close
+any open one first):
+\begin{lstlisting}[style=ps]
+vivado -mode batch -source scripts\program_prebuilt_led_jtag.tcl
+\end{lstlisting}
+
+Once programmed, \texttt{sw[7]} chooses the mode:
+\begin{itemize}[noitemsep]
+  \item \texttt{sw[7]=0} (\textbf{sequential FSM demo}): the lower LEDs advance one state per second,
+        \texttt{led[0]}\,(\texttt{IDLE}) $\to$\,\texttt{led[1]}\,$\to$\,\texttt{led[2]}\,$\to$\,\texttt{led[3]}\,$\to$\,all
+        off, then repeat. Press the reset button to jump straight back to \texttt{IDLE}.
+  \item \texttt{sw[7]=1} (\textbf{combinational demo}): \texttt{led[7:0]} show the eight logic functions of
+        \texttt{sw[3:0]} \emph{live}. Flip \texttt{sw[3:0]} and the LEDs change immediately, because there is no clock.
+\end{itemize}
 
 \paragraph{Troubleshooting}
 If \nav{Auto Connect} finds nothing, or a prebuilt demo script reports that no FPGA device was found:
 \begin{itemize}[noitemsep]
-  \item \textbf{Power} --- is \textbf{EXT PWR} plugged in and the power LED on? \texttt{PROG UART} alone does not power the board.
-  \item \textbf{Boot mode} --- is the \textbf{BOOT} switch on \textbf{JTAG} (not SD)? Power-cycle after changing it.
-  \item \textbf{JTAG busy} --- close any other Vivado/Vitis or running script holding the target.
-  \item \textbf{Wrong target} --- program the \texttt{xczu3}/\texttt{xczu3eg} FPGA device, not \texttt{arm\_dap}.
+  \item \textbf{Power.} Is \textbf{EXT PWR} plugged in and the power LED on? \texttt{PROG UART} alone does not power the board.
+  \item \textbf{Boot mode.} Is the \textbf{BOOT} switch on \textbf{JTAG} (not SD)? Power-cycle after changing it.
+  \item \textbf{JTAG busy.} Close any other Vivado/Vitis or running script holding the target.
+  \item \textbf{Wrong target.} Program the \texttt{xczu3}/\texttt{xczu3eg} FPGA device, not \texttt{arm\_dap}.
 \end{itemize}
 
 % ============================================================================
 \newpage
-\section{Topic 6 --- Static timing analysis}
+\section{Topic 7 --- PWM DAC: the digital/analog boundary}
 
 \subsection{Background}
-In the AC701 implementation the board clock is 200\,MHz, so the clock period is 5\,ns. Every signal launched
-by one flip-flop on a clock edge must arrive at the capturing flip-flop, and settle,
-\emph{before} the next edge. Static timing analysis (STA) checks this for \emph{all}
-register-to-register paths without simulating any input vectors.
+A digital output pin can only be 0 or 1, yet we often want an \emph{analog} level, for example a
+dimmable LED. \textbf{Pulse-Width Modulation (PWM)} fakes one by switching the pin on and off very fast and
+varying the \textbf{fraction} of each period that it stays high. That fraction is the \textbf{duty cycle}.
+The LED (and your eye) average the fast square wave, so the perceived brightness follows the duty cycle.
 
-\paragraph{Setup constraint (data must not arrive too late).}
-\[
-  T_{\mathrm{clk}} \;\ge\; T_{\mathrm{clk\text{-}to\text{-}q}}
-  + T_{\mathrm{comb}}^{\max} + T_{\mathrm{setup}} + \mathrm{margin}.
-\]
-The longest combinational path sets the maximum usable clock frequency: if the data
-arrives after the setup window opens, the captured value is undefined.
-
-\paragraph{Hold constraint (data must not arrive too early).}
-\[
-  T_{\mathrm{clk\text{-}to\text{-}q}} + T_{\mathrm{comb}}^{\min}
-  \;\ge\; T_{\mathrm{hold}} + T_{\mathrm{skew}}.
-\]
-The \emph{shortest} path must be long enough that the new value does not race
-through and overwrite the data before the capturing flip-flop has latched the
-\emph{previous} value. Note this is independent of clock frequency. A hold
-violation cannot be fixed by slowing the clock.
-
-\paragraph{Slack.}
-\[
-  \mathrm{slack} = T_{\mathrm{required}} - T_{\mathrm{arrival}}.
-\]
-Positive slack means the path meets timing with margin to spare; negative slack
-means it fails. Vivado reports the following:
-\begin{itemize}[noitemsep]
-  \item \textbf{WNS} --- Worst Negative Slack: the slack of the single tightest
-        setup path. $\mathrm{WNS} \ge 0$ means \emph{every} setup path is met.
-  \item \textbf{TNS} --- Total Negative Slack: the sum of all negative setup
-        slacks. $\mathrm{TNS} = 0$ confirms there are no setup violations.
-  \item \textbf{WHS / THS} --- Worst / Total Hold Slack, the hold-side
-        equivalents of WNS / TNS.
-  \item \textbf{Critical path} --- the path with the smallest slack, i.e.\ the
-        one closest to failing (and the first to fix if timing is not met).
-\end{itemize}
-In this small design the critical path usually lies inside the one-second
-counter, where the wide comparator and adder form the longest combinational
-chain.
-
-\subsection{Lab 6: read the timing report and find the critical path}
-
-\paragraph{Step 6.1 --- Open the implemented design.}
-
-\guitag~ \nav{Flow Navigator}\gto\nav{Open Implemented Design}.\quad
-
-\tcltag~ \texttt{open\_run impl\_1}
-
-\paragraph{Step 6.2 --- Open the timing summary.}
-
-\guitag~ \nav{Reports}\gto\nav{Timing}\gto\nav{Report Timing Summary} (\nav{OK}).\\
-\tcltag~ \texttt{report\_timing\_summary} \quad
-
-\paragraph{Step 6.3 --- Inspect the worst (critical) path.}
-
-\guitag~ In the \nav{Timing} tab expand \nav{Setup}\gto your clock and click the first (worst) path.
-The \nav{Path Properties} show Source (From), Destination (to), Source Clock, Destination Clock, Total Delay, Logic Delay and Net Delay. Record them.
-
-\paragraph{Step 6.4 --- See the path as hardware.}
-
-\guitag~ Right-click the selected path \gto\ \nav{Schematic}. Identify the launch flip-flop, the
-combinational logic (LUTs / carry chain), and the capture flip-flop.
-\par\noindent\textit{Report evidence: capture the timing summary and/or the critical-path schematic with the launch flip-flop, logic, and capture flip-flop labelled.}\par
-
-\begin{questionbox}
-\textbf{Checkpoint 6.} Record WNS and TNS; state whether timing is met and how you know; record the
-critical path start/endpoint; and describe the path in one sentence with a screenshot of the schematic attached.
-\end{questionbox}
-
-% ============================================================================
-\newpage
-\section{Topic 7 --- Power analysis}
-
-\subsection{Background}
-Vivado's power report \emph{estimates} on-chip power and splits it into two parts:
-\textbf{static} power (transistor leakage, present whenever the device is powered)
-and \textbf{dynamic} power (drawn only when nodes switch). Vivado further breaks the
-dynamic part into \textbf{clock}, \textbf{logic/signal}, and \textbf{I/O} power.
-
-Dynamic switching power follows
-\[
-  P_{\mathrm{dyn}} \;\approx\; \alpha\, C\, V_{\mathrm{DD}}^{2}\, f,
-\]
-where $\alpha$ is the switching (toggle) activity, $C$ the switched capacitance,
-$V_{\mathrm{DD}}$ the supply voltage, and $f$ the clock frequency. The activity
-$\alpha$ is the key unknown: unless you supply real switching data (e.g.\ a SAIF
-file from simulation), Vivado performs a \emph{vectorless} estimate using assumed
-default toggle rates, and flags this with a low \nav{Confidence level}. The
-$V_{\mathrm{DD}}^{2}$ term is why supply voltage dominates the energy budget, and
-the linear $f$ term is why the clock and clock-driven logic are often the largest
-dynamic contributors.
-
-\subsection{Lab 7: read the power report}
-
-\paragraph{Step 7.1 --- Open the power report.}
-
-\guitag~ \nav{Reports}\gto\nav{Report Power} (\nav{OK}).\\
-\tcltag~ \texttt{report\_power}\\
-
-\paragraph{Step 7.2 --- Record the numbers.}
-From the \nav{Summary}, record the total on-chip power, the static and dynamic
-totals, and the clock / logic-signal / I/O components; note which is largest.
-Also record the reported \nav{Confidence level}, as it tells you how much to trust
-the estimate.
-\par\noindent\textit{Report evidence: capture the Power Summary panel with total power, static/dynamic split, and the largest category visible.}\par
-
-\begin{questionbox}
-\textbf{Checkpoint 7.}
-\begin{enumerate}[noitemsep,nosep]
-  \item Which power category is largest, and does the $\alpha C V_{\mathrm{DD}}^{2} f$
-        relation explain why?
-  \item What assumptions drive the estimate, and what would you provide to improve
-        its confidence level?
-  \item Does this report include the power consumed by the physical LEDs on the
-        board?
-\end{enumerate}
-\end{questionbox}
-
-% ============================================================================
-\newpage
-\section{Topic 8 --- PWM DAC: the digital/analog boundary}
-
-\subsection{Background}
-\textbf{Pulse-Width Modulation (PWM)} encodes an analog level as the fraction of time a digital signal
-is high (the \textbf{duty cycle}). A free-running counter compares against \texttt{duty}:
-\texttt{pwm\_out = (count < duty)}, so \texttt{pwm\_out} is high for \texttt{duty} of every $2^N$ cycles.
-\begin{itemize}[noitemsep]
-  \item With $N=8$, one period is $2^8=256$ cycles, so the PWM frequency is
-        $100\,\mathrm{MHz}/256 = 390.625\,\mathrm{kHz}$.
-  \item The selector maps \texttt{sw[3:0]} to \texttt{duty = \{sw, 4'b0000\}}: \texttt{0000}$\to$0\%,
-        \texttt{1111}$\to 240/256 \approx 93.75\%$ (this simple version never reaches true 100\%).
-\end{itemize}
-An LED driven by PWM looks dimmer/brighter because the eye averages the fast on/off. In this lab we keep
-the hardware simple and drive only the on-board LED. The same PWM idea can be filtered in other designs,
-but there is no PMOD output in this version.
+PWM is built from two pieces you have already met: a \textbf{sequential} counter and a \textbf{combinational}
+comparator. A free-running $N$-bit counter ramps $0, 1, 2, \ldots, 2^N{-}1$ and wraps; on every clock the
+output is
+\[ \texttt{pwm\_out} = (\texttt{count} < \texttt{duty}). \]
+So \texttt{pwm\_out} is high for the first \texttt{duty} counts of each $2^N$-cycle period and low for the
+rest, and its average value, and therefore the LED brightness, is \texttt{duty}$/2^N$. The waveform below
+shows how the comparator turns the counter ramp into a pulse train:
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=1.0\linewidth]{Figures/screenshots/t8_01_pwm_datapath.png}
-  \caption{The PWM data path.}
+  \begin{tikzpicture}[>=stealth', font=\small]
+    % ---- counter (sawtooth) panel ----
+    \draw[->] (-0.2,0) -- (9.5,0) node[right] {\footnotesize time};
+    \draw[->] (0,-0.15) -- (0,2.55) node[above] {\footnotesize \texttt{count}};
+    \draw[tudelft, very thick] (0,0)--(4,2)--(4,0)--(8,2)--(8,0)--(9,1);
+    \draw[orange, very thick, dashed] (0,1.3)--(9,1.3);
+    \node[orange, anchor=west, font=\footnotesize] at (9.05,1.3) {\texttt{duty}};
+    \node[anchor=east, font=\scriptsize] at (-0.05,2) {$2^N{-}1$};
+    \draw[<->] (0,2.3)--(4,2.3);
+    \node[fill=white, inner sep=1pt, font=\scriptsize] at (2,2.3) {one period $= 2^N = 256$ clocks};
+    % crossing guides
+    \draw[darkgray, dotted] (2.6,1.3)--(2.6,-2.05);
+    \draw[darkgray, dotted] (4,0)--(4,-2.05);
+    \draw[darkgray, dotted] (6.6,1.3)--(6.6,-2.05);
+    \draw[darkgray, dotted] (8,0)--(8,-2.05);
+    % ---- pwm_out panel ----
+    \draw[->] (-0.2,-1.9) -- (9.5,-1.9) node[right] {\footnotesize time};
+    \node[anchor=east, font=\footnotesize] at (-0.1,-1.4) {\texttt{pwm\_out}};
+    \draw[ForestGreen, very thick]
+      (0,-1.0)--(2.6,-1.0)--(2.6,-1.8)--(4,-1.8)--(4,-1.0)--(6.6,-1.0)--(6.6,-1.8)--(8,-1.8)--(8,-1.0)--(9,-1.0);
+    \draw[<->] (0,-2.25)--(2.6,-2.25);
+    \node[fill=white, inner sep=1pt, font=\scriptsize] at (1.3,-2.25) {high for \texttt{duty} clocks};
+  \end{tikzpicture}
+  \caption{PWM from a counter and a comparator. While the counter ramp is below \texttt{duty},
+    \texttt{pwm\_out} is high; the high fraction, and thus the average level that drives the LED,
+    equals \texttt{duty}$/2^N$. Raising \texttt{duty} lifts the dashed line and widens every pulse.}
+\end{figure}
+
+\begin{itemize}[noitemsep]
+  \item With $N = 8$ the period is $2^8 = 256$ clocks. At the AUP-ZU3's 100\,MHz clock the PWM frequency is
+        $100\,\mathrm{MHz} / 256 = 390.625\,\mathrm{kHz}$, far above what the eye can follow, so you see
+        only the average.
+  \item \texttt{duty\_select} turns the four switches into a duty code, \texttt{duty = \{sw, 4'b0000\}}:
+        16 evenly spaced levels from \texttt{0000\_0000} ($0\%$) up to \texttt{1111\_0000} $= 240/256
+        \approx 93.75\%$. This simple selector never reaches a true $100\%$.
+\end{itemize}
+
+The full data path strings these together:
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[>=stealth', node distance=8mm and 15mm,
+      blk/.style={draw=tudelft, very thick, fill=lightgray, rounded corners, align=center,
+        minimum height=1.15cm, inner sep=5pt, font=\footnotesize\bfseries},
+      io/.style={align=center, font=\footnotesize}]
+    \node[io] (sw) {\texttt{sw[3:0]}\\{\scriptsize 4 switches}};
+    \node[blk, right=of sw] (dsel) {duty\_select\\[1pt]{\scriptsize\ttfamily duty=\{sw,4'b0000\}}};
+    \node[blk, right=of dsel] (pwm) {pwm\\[1pt]{\scriptsize counter $+$ comparator}\\[1pt]{\scriptsize\ttfamily count < duty}};
+    \node[io, right=of pwm] (led) {\texttt{led[0]}\\{\scriptsize brightness}};
+    \node[io, above=of pwm] (clk) {\texttt{clk}, \texttt{rst}};
+    \draw[->, very thick] (sw)--(dsel);
+    \draw[->, very thick] (dsel)--(pwm) node[midway, above, font=\scriptsize] {\texttt{duty[7:0]}};
+    \draw[->, very thick] (pwm)--(led) node[midway, above, font=\scriptsize] {\texttt{pwm\_out}};
+    \draw[->, very thick] (clk)--(pwm);
+  \end{tikzpicture}
+  \caption{The PWM data path. The four switches choose a duty code; the counter-plus-comparator turns it
+    into a pulse train whose average dims \texttt{led[0]}. (\texttt{clk} comes from the board's
+    \texttt{IBUFDS}; \texttt{rst} from the reset synchroniser.)}
 \end{figure}
 
 
 
-\subsection{Lab 8: complete, simulate, and optionally observe the PWM LED dimmer}
+\subsection{Lab 7: complete the PWM generator and watch it dim an LED}
+You will \textbf{create the project, complete two lines of RTL, and run the behavioural simulation}. You do
+\emph{not} synthesize or implement anything; the board demonstration in Step 7.4 uses a prebuilt AUP-ZU3
+bitstream, so a passing simulation is all your own code needs.
 
-\paragraph{Step 8.1 --- Complete the PWM mechanism.}
-Skim the PWM source files:
+\paragraph{Step 7.1 --- Create the PWM project (no synthesis).}
+
+\pstag~ from the repository root. The first line builds the project (fast, no synthesis), and the second
+opens it in the GUI:
+\begin{lstlisting}[style=ps]
+vivado -mode batch -source pwm_dac\scripts\create_pwm_project.tcl
+vivado pwm_dac\build_pwm_project\pwm_dac_lab.xpr
+\end{lstlisting}
+
+\paragraph{Step 7.2 --- Inspect the design and complete \texttt{pwm.sv}.}
+
+\guitag~ In \nav{Sources}\gto\nav{Design Sources}, open and read the four small modules so you see the
+whole data path from the figures above:
 \begin{itemize}[noitemsep]
-  \item \texttt{pwm\_dac/src/duty\_select.sv}: combinational duty selection.
-  \item \texttt{pwm\_dac/src/pwm.sv}: sequential counter plus combinational comparator.
-  \item \texttt{pwm\_dac/src/synchronizer.sv}: reset-button synchronizer.
-  \item \texttt{pwm\_dac/src/top\_pwm\_dac.sv}: top-level wiring.
+  \item \texttt{duty\_select.sv} is \emph{combinational}: it turns \texttt{sw[3:0]} into the 8-bit \texttt{duty}.
+  \item \texttt{pwm.sv} holds the \emph{sequential} counter and \emph{combinational} comparator you will finish.
+  \item \texttt{synchronizer.sv} cleans the asynchronous reset button into the clock domain.
+  \item \texttt{top\_pwm\_dac.sv} is the board wiring: the \texttt{IBUFDS} clock, the modules above, and the LED map.
 \end{itemize}
-Then open \texttt{pwm\_dac/src/pwm.sv} and fill in the two TODO lines:
+Now open \texttt{pwm.sv} and fill in its two TODO lines so the code matches the waveform:
 \begin{enumerate}[noitemsep]
-  \item update the N-bit counter once per clock when reset is not asserted;
-  \item drive \texttt{pwm\_out} high when \texttt{count < duty}.
+  \item \textbf{TODO 1: the counter (sequential).} Inside the \texttt{always\_ff}, make \texttt{count}
+        advance by one each clock and let the $N$-bit register \emph{wrap} on its own at the top of the
+        range. This is the rising ramp in the figure.
+  \item \textbf{TODO 2: the comparator (combinational).} Drive \texttt{pwm\_out} high exactly while the
+        counter sits below the threshold, that is, compare \texttt{count} against \texttt{duty}. This is the
+        crossing point in the figure.
 \end{enumerate}
 
-\paragraph{Step 8.2 --- Simulate the PWM generator.}
-\texttt{pwm\_dac/sim/tb\_pwm.sv} drives several duty values and checks \texttt{pwm\_out} is high for exactly
-\texttt{duty} cycles per 256-cycle period. Run it only after completing \texttt{pwm.sv}.
+\paragraph{Step 7.3 --- Run the behavioural simulation and confirm it passes.}
+\texttt{tb\_pwm} drives several duty values and counts how many cycles \texttt{pwm\_out} is high in each
+256-cycle period, checking it equals \texttt{duty}.
 
-\pstag~
-Run the scripted simulation:
+\guitag~ \texttt{tb\_pwm} is already the simulation top, so \nav{Flow Navigator}\gto\nav{Run Simulation}
+\gto\nav{Run Behavioral Simulation}.\\
+\begin{notebox}
+\textbf{Don't see the \texttt{PWM\_STUDENT\_TEST\_PASS} line?} The GUI runs only a short default time
+(e.g.\ 1\,$\mu$s) and then pauses. Click \nav{Run All} on the simulation toolbar (or type
+\texttt{run all} in the Tcl Console) so the simulation continues to \texttt{\$finish} and prints the result.
+\end{notebox}
+\pstag~ \emph{(alternative, no GUI)}
 \begin{lstlisting}[style=ps]
 vivado -mode batch -source pwm_dac\scripts\run_pwm_simulation.tcl
 \end{lstlisting}
-If the TODO lines are correct, the console and \texttt{pwm\_dac/build\_pwm\_dac/xsim\_pwm/xsim.log}
-will include a clear pass line:
+A correct implementation ends with a clear pass line in the Tcl console (and in
+\texttt{pwm\_dac/build\_pwm\_dac/xsim\_pwm/xsim.log}):
 \begin{lstlisting}[style=plain]
 PWM_STUDENT_TEST_PASS: all 7 duty-cycle checks passed.
 \end{lstlisting}
-If it fails, read the first \texttt{[FAIL]} or compile error, fix \texttt{pwm\_dac/src/pwm.sv}, and rerun.
+If you see a \texttt{[FAIL]} line instead, compare its \texttt{high\_cycles} with \texttt{expected} for that
+duty, fix \texttt{pwm.sv}, and rerun.
 
-\textbf{Before answering the Topic 8 worksheet, show your responsible TA the
-\texttt{PWM\_STUDENT\_TEST\_PASS} line.} This is the required check for your own PWM implementation.
-\par\noindent\textit{Report evidence: capture the console or \texttt{xsim.log} line showing
-\texttt{PWM\_STUDENT\_TEST\_PASS}.}\par
+\paragraph{Step 7.4 --- See it dim an LED on the board (prebuilt demo).}
+Because the campus PCs may not implement an XCZU3EG design, the board demonstration uses a prebuilt AUP-ZU3
+bitstream, with no synthesis or implementation on your part. (It shows the expected brightness; your
+\emph{required} proof remains the passing testbench from Step 7.3.) After the AUP-ZU3 connection preflight
+in Topic 6:
 
-\paragraph{Step 8.3 --- Optional prebuilt AUP-ZU3 brightness demo.}
-The university PC may not be able to implement an XCZU3EG design, so the board demonstration uses a
-prebuilt AUP-ZU3 bitstream from \texttt{prebuilt\_bitstreams/}. This demo shows the expected LED
-brightness behavior; it is not proof that your TODO lines are correct. Your required proof is the
-passing testbench from Step 8.2.
-
-\pstag~ After the AUP-ZU3 connection preflight in Topic 5, program the prebuilt demo:
+\guitag~ In \nav{Hardware Manager} right-click the \texttt{xczu3} device \gto\ \nav{Program Device}, choose
+\texttt{prebuilt\_bitstreams\textbackslash aup\_zu3\_pwm\_led\_demo.bit}, and click \nav{Program}.\\
+\pstag~ \emph{(alternative)}
 \begin{lstlisting}[style=ps]
 vivado -mode batch -source pwm_dac\scripts\program_prebuilt_pwm_jtag.tcl
 \end{lstlisting}
-Set \texttt{sw[3:0]} low (e.g.\ \texttt{0001}) --- \texttt{led[0]} is dim; raise toward \texttt{1111} ---
-brighter. \texttt{led[4:1]} mirrors your switch code.
+Set \texttt{sw[3:0]} low (e.g.\ \texttt{0001}) and \texttt{led[0]} glows dimly; raise toward \texttt{1111}
+and it brightens. \texttt{led[4:1]} mirrors your switch code so you can read off the selected level.
 
 \begin{questionbox}
-\textbf{Checkpoint 8.}
-\begin{enumerate}[noitemsep]
-    \item For a 100\,MHz clock and 8-bit counter, what is the PWM frequency (show the arithmetic)?
-    \item Why does changing duty change LED brightness?
-    \item Which TODO line describes sequential logic, and which describes combinational logic?
-    \item Why does \texttt{sw[3:0]=1111} not produce a true 100\% duty cycle in this selector?
-\end{enumerate}
+\textbf{Checkpoint 7.}
+Put a screenshot of the \texttt{PWM\_STUDENT\_TEST\_PASS} line from your simulation log in the report.
 \end{questionbox}
 
 % ============================================================================
 \newpage
-\section{Topic 9 --- Optional rainbow RTL demo}
+\section{Topic 8 --- Optional rainbow RTL demo}
 
 \subsection{Just for fun}
 If your group finishes early, you can program a prebuilt rainbow demo for the AUP-ZU3. It drives the
 four RGB LEDs through a slowly changing hue generator. The switches still mirror onto the single-colour
 LEDs, and the pushbuttons change the rainbow speed, direction, and phase spacing.
 
-\paragraph{Step 9.1 --- Program the prebuilt rainbow demo.}
-Keep the same AUP-ZU3 connection and JTAG preflight from Topic 5, then program the prebuilt rainbow
+\paragraph{Step 8.1 --- Program the prebuilt rainbow demo.}
+Keep the same AUP-ZU3 connection and JTAG preflight from Topic 6, then program the prebuilt rainbow
 bitstream:
 \begin{lstlisting}[style=ps]
 vivado -mode batch -source rainbow\scripts\program_prebuilt_rainbow_jtag.tcl
 \end{lstlisting}
 
-\paragraph{Step 9.2 --- Play with the controls.}
+\paragraph{Step 8.2 --- Play with the controls.}
 \begin{itemize}[noitemsep]
   \item \texttt{sw[7:0]} mirror directly onto \texttt{led[7:0]}.
   \item Button 0 makes the colour cycle faster.
@@ -878,65 +1031,14 @@ vivado -mode batch -source rainbow\scripts\program_prebuilt_rainbow_jtag.tcl
   \item Button 3 changes the phase spacing between RGB LEDs.
 \end{itemize}
 
-\begin{notebox}
-Topic 9 is optional and has no report worksheet questions. It is a small reward lap after the required
-PWM testbench pass is checked by your TA.
-\end{notebox}
-
 \subsection*{Lab completion checklist}
-Your group passes the full lab flow if you ran at least one behavioural simulation, completed the AC701
-implementation, recorded timing and power report values, identified a critical path, completed the PWM
-TODOs, showed the \texttt{PWM\_STUDENT\_TEST\_PASS} line to your responsible TA, and answered the
-checkpoint questions with reasonable understanding. The prebuilt AUP-ZU3 PWM and rainbow bitstreams are
-for demonstration only.
-
 \begin{notebox}
-\textbf{Board return is required.} Your group can only pass the lab after returning the FPGA board box
-to the responsible TA.
+    \begin{itemize}
+        \item \textbf{Board return is required.} Your group can only pass the lab after returning the FPGA board box to the responsible TA..
+        \item \textbf{Report submission.} Write up your checkpoint answers in the provided \textbf{\LaTeX{} report
+template} (\texttt{EE2C2\_Lab3\_Report\_Template}) available on \textbf{Brightspace}, and submit the
+compiled report PDF there. This report is the deliverable that is graded.
+    \end{itemize}
 \end{notebox}
-
-% ============================================================================
-\appendix
-\section{Command quick reference}
-Run PowerShell commands from the \textbf{repository root} (the \texttt{EE2C2\_FPGA\_Lab} folder you cloned)
-after adding Vivado to \texttt{\$env:Path} in Topic 0.
-
-\begin{center}
-\begin{tabular}{@{}p{4.6cm}p{9cm}@{}}
-\toprule
-\textbf{Task} & \textbf{Command} \\ \midrule
-Clone the lab & \texttt{git clone https://github.com/lab-emi/EE2C2\_FPGA\_Lab.git} \\
-Create project (no build) & \texttt{vivado -mode batch -source scripts\textbackslash create\_vivado\_project.tcl} \\
-Open project in GUI & \texttt{vivado build\textbackslash EE2C2\_FPGA\_Lab.xpr} \\
-Combinational sim & \texttt{vivado -mode batch -source scripts\textbackslash run\_simulation.tcl -tclargs tb\_comb\_led\_logic} \\
-FSM sim & \texttt{vivado -mode batch -source scripts\textbackslash run\_simulation.tcl -tclargs tb\_led\_fsm} \\
-Build AC701 (synth+impl+bit) & \texttt{vivado -mode batch -source build.tcl} \\
-Open implemented design & (Tcl) \texttt{open\_run impl\_1} \\
-Timing summary & (Tcl) \texttt{report\_timing\_summary} \\
-Power report & (Tcl) \texttt{report\_power} \\
-Run PWM DAC sim & \texttt{vivado -mode batch -source pwm\_dac\textbackslash scripts\textbackslash run\_pwm\_simulation.tcl} \\
-Program prebuilt PWM demo & \texttt{vivado -mode batch -source pwm\_dac\textbackslash scripts\textbackslash program\_prebuilt\_pwm\_jtag.tcl} \\
-Program prebuilt rainbow demo & \texttt{vivado -mode batch -source rainbow\textbackslash scripts\textbackslash program\_prebuilt\_rainbow\_jtag.tcl} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\section{Troubleshooting}
-\begin{itemize}[noitemsep]
-  \item \texttt{vivado} not recognised --- from the repository root, run:
-\begin{lstlisting}[style=ps]
-$env:Path += ";C:\Xilinx\Vivado\2023.2\bin"
-$env:Path += ";C:\Xilinx\Vitis\2023.2\bin"
-vivado -version
-\end{lstlisting}
-        If Vivado is installed somewhere else, replace the path with that installation's \texttt{bin} folder.
-  \item \texttt{Specified part could not be found} for \texttt{xczu3eg-sfvc784} --- you ran an old
-        AUP-ZU3 build script. Use \texttt{build.tcl} for the required AC701 implementation, and use the
-        prebuilt programming scripts for the AUP-ZU3 demos.
-  \item \texttt{build.tcl} cannot delete \texttt{build\textbackslash} --- the GUI has the project open; close Vivado and retry.
-  \item Synthesis red error --- read the first \nav{Messages} error; look for a missing semicolon, a typo, or a port mismatch.
-  \item Board not detected --- check the USB-JTAG cable and power; ensure no other Vivado holds the JTAG target.
-  \item Wrong sources in the project --- re-run \texttt{create\_vivado\_project.tcl} to rebuild cleanly.
-\end{itemize}
 
 \end{document}
