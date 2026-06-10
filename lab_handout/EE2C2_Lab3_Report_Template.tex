@@ -14,6 +14,7 @@
 \usepackage{enumitem}
 
 \definecolor{tudelft}{RGB}{0,166,214}
+\definecolor{ansbg}{RGB}{245,250,252} % light tint for answer-box background
 
 \pagestyle{fancy}
 \setlength{\headheight}{23.12pt}
@@ -25,11 +26,12 @@
 \fancyfoot[C]{Delft University of Technology, Faculty of EEMCS}
 \hypersetup{colorlinks=true, linkcolor=tudelft, urlcolor=tudelft}
 
-% Empty answer box with a title and a fixed height (for written answers).
+% Empty answer box with a title (#1) and content (#2). For a blank, fixed-height
+% writing area, pass a vertical strut as #2, e.g. \rule{0pt}{0.16\textheight}.
 % The title is braced ({#1}) so commas in it are not parsed as tcolorbox keys.
 \newcommand{\answerbox}[2]{%
-  \begin{tcolorbox}[colback=white,colframe=tudelft,boxrule=0.8pt,title={#1},
-                    height={#2},fonttitle=\bfseries\small]\mbox{}\end{tcolorbox}}
+  \begin{tcolorbox}[colback=ansbg,colframe=tudelft,boxrule=0.8pt,title={#1},
+                    fonttitle=\bfseries\small]#2\end{tcolorbox}}
 
 \newcommand{\ans}{\underline{\hspace{6cm}}}
 
@@ -80,7 +82,7 @@ second row to the left of the QR code.}\normalsize
         they build different gates. Explain the difference, and state exactly which switch settings drive
         each of these two outputs high.
 \end{enumerate}
-\answerbox{Your answer}{0.16\textheight}
+\answerbox{Your answer}{\textcolor{gray}{\textit{Replace these texts with your answers.}}\par\rule{0pt}{0.16\textheight}}
 
 \noindent\textbf{Checkpoint 1b: combinational behaviour and simulation.}
 \begin{enumerate}[noitemsep]
@@ -88,14 +90,14 @@ second row to the left of the QR code.}\normalsize
   \item Why may a \emph{testbench} change its inputs with \texttt{\#10} delays, while \emph{synthesizable} RTL
         must never use \texttt{\#10} delays?
 \end{enumerate}
-\answerbox{Your answer}{0.14\textheight}
+\answerbox{Your answer}{\textcolor{gray}{\textit{Replace these texts with your answers.}}\par\rule{0pt}{0.14\textheight}}
 
 % ----------------------------------------------------------------------------
 \section*{Topic 2 --- Sequential logic and FSM}
 
 \noindent\textbf{Checkpoint 2.} The FSM has a state register, next-state logic, and output decode. Why does
 the output decode read \texttt{state} (the registered value) rather than \texttt{next\_state}?
-\answerbox{Your answer}{0.12\textheight}
+\answerbox{Your answer}{\textcolor{gray}{\textit{Replace these texts with your answers.}}\par\rule{0pt}{0.12\textheight}}
 
 % ----------------------------------------------------------------------------
 \section*{Topic 3 --- Synthesis and implementation}
@@ -103,7 +105,7 @@ the output decode read \texttt{state} (the registered value) rather than \texttt
 \noindent\textbf{Checkpoint 3.} \texttt{ac701\_lab.xdc} supplies two distinct kinds of information:
 \emph{where} each port connects and \emph{how fast} the clock runs. What would go wrong if the clock-period
 constraint were left out?
-\answerbox{Your answer}{0.12\textheight}
+\answerbox{Your answer}{\textcolor{gray}{\textit{Replace these texts with your answers.}}\par\rule{0pt}{0.12\textheight}}
 
 % ----------------------------------------------------------------------------
 \section*{Topic 4 --- Static timing analysis}
@@ -122,14 +124,14 @@ constraint were left out?
            - t_{\mathrm{slack}}, \]
         and report your four numbers and the resulting $t_{\mathrm{su}}$.
 \end{enumerate}
-\answerbox{Your answer}{0.22\textheight}
+\answerbox{Your answer}{\textcolor{gray}{\textit{Replace these texts with your answers.}}\par\rule{0pt}{0.22\textheight}}
 
 % ----------------------------------------------------------------------------
 \section*{Topic 5 --- Power analysis}
 
 \noindent\textbf{Checkpoint 5.} Imagine halving the clock frequency to 100\,MHz. Which part of the total
 power would drop, and which would stay roughly the same?
-\answerbox{Your answer}{0.12\textheight}
+\answerbox{Your answer}{\textcolor{gray}{\textit{Replace these texts with your answers.}}\par\rule{0pt}{0.12\textheight}}
 
 % ----------------------------------------------------------------------------
 \section*{Topic 7 --- PWM DAC}
